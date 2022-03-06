@@ -39,21 +39,10 @@ const productSchema = new Schema({
             type: String
         }
     }],
-    variety: [{
-        quantity: {
-            type: Number,
-            default: 0
-        },
-        price: {
-            type: Number
-        },
-        color: {
-            type: String
-        },
-        other: {
-            type: String,
-        }
-    }]
+    quantity:{
+        type:Number,
+        default:0
+    }
 }, {
     timestamps: true,
     collection: "PRODCUTS"

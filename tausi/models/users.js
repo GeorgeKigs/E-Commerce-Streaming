@@ -43,12 +43,6 @@ const user = new Schema({
     },
     phoneNumber: {
         type: Number,
-        // required: function () {
-        //     if (this.phoneNumber) {
-        //         return false
-        //     }
-        //     return true
-        // }
     },
     registered: {
         status: {
@@ -166,6 +160,7 @@ statics.updatePassword = async function (email, password) {
     return true
 }
 
+// soft delete for the users
 statics.deleteUser = async function (identifier) {
     if (identifier instanceof Number) {
         var userResults = await userModel.findOneAndUpdate({

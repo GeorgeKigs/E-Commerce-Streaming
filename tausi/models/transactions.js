@@ -38,7 +38,7 @@ const transactionSchema = new Schema({
     },
     transactionId:{
         type:String
-    }
+    },
     stage: {
         type: String,
         enum: ['TRANSIT', 'COMPLETE', 'BEGIN']
