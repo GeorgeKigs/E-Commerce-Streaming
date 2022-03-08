@@ -8,6 +8,10 @@ const {
 
 
 const orderSchema = new Schema({
+    orderNumber:{
+        type:Number
+    },
+    
     user: {
         type: Schema.Types.ObjectId,
         ref:"usersModel",

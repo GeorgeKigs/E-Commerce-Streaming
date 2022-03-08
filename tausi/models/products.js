@@ -8,6 +8,9 @@ const {
 
 
 const productSchema = new Schema({
+    productNumber:{
+        type:Number
+    },
     productName: {
         type: String,
         required: true

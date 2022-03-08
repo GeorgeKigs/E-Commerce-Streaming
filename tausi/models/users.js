@@ -14,6 +14,9 @@ const {
 
 // ! Custom required for details regarding phone Number and email
 const user = new Schema({
+    customerNumber:{
+        type:Number
+    },
     firstName: {
         type: String,
         required: true,
@@ -32,12 +35,6 @@ const user = new Schema({
     },
     email: {
         type: String,
-        // required: function () {
-        //     if (this.phoneNumber.length == 0) {
-        //         return false
-        //     }
-        //     return true
-        // },
         trim: true,
         lowercase: true
     },
@@ -100,6 +97,7 @@ user.pre('save', async function (next) {
         if (!this.phoneNumber && !this.email) {
             next('input phoneNumber and/or email')
         }
+        console.log(this.email,this.phoneNumber)
         var user = await userModel.findOne({
             $or: [{
                 email: this.email

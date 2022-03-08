@@ -5,6 +5,9 @@ const {
 } = mongoose;
 
 const categorySchema = new Schema({
+    categoryNumber:{
+        type:Number,
+    },
     categoryName: {
         type: String,
         required: true

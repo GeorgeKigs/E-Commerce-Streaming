@@ -19,10 +19,7 @@ const transactionSchema = new Schema({
             ref:"orderModel"
         }
         // ! To be discussed later
-        // coupons:{
-        //     type:Schema.Types.ObjectId,
-        //     ref:"couponModel"
-        // }
+
     }],
     mode:{
         type:String,
