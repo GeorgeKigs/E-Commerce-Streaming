@@ -8,10 +8,11 @@ const {
 
 
 const orderSchema = new Schema({
+    // Identified by orderNumber
     orderNumber:{
         type:Number
     },
-    
+    //Use customerNumber to get the _id
     user: {
         type: Schema.Types.ObjectId,
         ref:"usersModel",
@@ -37,15 +38,18 @@ const orderSchema = new Schema({
         type: Boolean,
         default: false
     },
+    //status of the order
     stage: {
         type: String,
-        enum: ['transit', 'complete', 'begin']
+        enum: ['Shipped','Resolved','Cancelled','On Hold',
+        'Disputed','In Process']
     },
     totalPrice:{
         type:Number,
         default:0,
         required:true
     },
+    //get the cartId based on the orderNo
     cartId:{
         type:Schema.Types.ObjectId,
         ref:"cartModel",
@@ -65,6 +69,10 @@ orderSchema.pre("save", async function(next){
     try {
       this.complete = false;
       let user = await userModel.findById(this.user); 
+
+      if (!user){
+        next("User must be registered.")
+      }
       
       var calculate = function(){
           var price = 0
@@ -76,9 +84,7 @@ orderSchema.pre("save", async function(next){
       } 
       this.totalPrice = calculate()
       
-      if (!user){
-        next("User must be registered.")
-      }
+      
       next();
     } catch (error) {
         console.log(error)

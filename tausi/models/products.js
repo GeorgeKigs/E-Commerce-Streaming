@@ -9,7 +9,7 @@ const {
 
 const productSchema = new Schema({
     productNumber:{
-        type:Number
+        type:String
     },
     productName: {
         type: String,

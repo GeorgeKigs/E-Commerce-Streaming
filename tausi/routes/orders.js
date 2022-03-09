@@ -8,7 +8,8 @@ router.get('/', function(req, res, next) {
 
 router.post('/add',async (res,req,next)=>{
   try {
-    console.log(res.body)
+    let body = res.body;
+    
     req.json(
       {"success":true,"return":0}
     )

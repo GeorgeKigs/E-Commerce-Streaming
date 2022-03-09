@@ -6,17 +6,25 @@ const {
 } = mongoose;
 
 const cartSchema = new Schema({
+    // get the order number to connect with the orders
+    orderNumber:{
+        type:Number
+    },
+    //cutomer Number
     user: {
         type: Schema.Types.ObjectId,
         ref:"userModel",
         required: true
     },
+    // get sample from order details. query and add the records
     products: [{
+        // productCode loop through the object
         product: {
             type: Schema.Types.ObjectId,
             ref: "categoryModel",
             required:true
         },
+        //priceEach
         price: {
             type: Number,
             required: true
@@ -25,6 +33,7 @@ const cartSchema = new Schema({
             type:Boolean,
             default:true
         },
+        //quantity
         quantity: {
             type: Number,
             required: true,
@@ -34,7 +43,7 @@ const cartSchema = new Schema({
     
 }, {
     timestamps: true,
-    collection: "CART"
+    collection: "Cart"
 })
 
 cartSchema.pre("save", async function(next){
