@@ -46,6 +46,11 @@ const cartSchema = new Schema({
     collection: "Cart"
 })
 
+const {
+    statics,
+    methods
+} = cartSchema
+
 cartSchema.pre("save", async function(next){
     try {
       this.complete = false;
@@ -67,7 +72,7 @@ statics.addProduct = async function(products){
     if(!user){
         Error("Cannot update the user details");
     }
-    await products.forEach(element=>{
+    products.forEach(async element=>{
         const id = element.product_id;
         const product = await productModel.findById(id,{price:1})
         cartModel.updateOne(
@@ -106,7 +111,7 @@ statics.addProductQuantity = async function(products){
 
     const user = await cartModel.findOne({user:this.user})
     
-    await products.forEach(element=>{
+    await products.forEach(async element=>{
         const id = element.product_id;
         const product = await productModel.findById(id,{price:1})
         cartModel.updateOne(
@@ -122,7 +127,7 @@ statics.removeProductQuantity = async function(products){
 
     const user = await cartModel.findOne({user:this.user})
     
-    await products.forEach(element=>{
+    await products.forEach(async element=>{
         const id = element.product_id;
         const product = await productModel.findById(id,{price:1})
         cartModel.updateOne(
@@ -159,5 +164,5 @@ methods.findTotalPrice = async function(){
     return totalPrice;
 }
 
-const cartModel = mongoose.model("CART",cartSchema)
+const cartModel = mongoose.model("Cart",cartSchema)
 module.exports = cartModel;

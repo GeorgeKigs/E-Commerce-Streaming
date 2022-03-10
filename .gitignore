@@ -5,3 +5,4 @@ trial*
 *.ipynb
 *.env
 *.pyc
+.prettierrc

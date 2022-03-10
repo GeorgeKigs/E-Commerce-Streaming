@@ -48,7 +48,7 @@ const productSchema = new Schema({
     }
 }, {
     timestamps: true,
-    collection: "PRODCUTS"
+    collection: "Products"
 })
 const {
     methods,
@@ -77,5 +77,5 @@ statics.findByTagName = async function (tagName) {
     const details = await productModel.find({"tags.tagname":tagName});
 }
 
-var productModel = mongoose.model("PRODUCTS", productSchema)
+var productModel = mongoose.model("Products", productSchema)
 module.exports = productModel;

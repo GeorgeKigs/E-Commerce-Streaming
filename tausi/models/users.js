@@ -97,7 +97,7 @@ user.pre('save', async function (next) {
         if (!this.phoneNumber && !this.email) {
             next('input phoneNumber and/or email')
         }
-        console.log(this.email,this.phoneNumber)
+        // console.log(this.email,this.phoneNumber)
         var user = await userModel.findOne({
             $or: [{
                 email: this.email

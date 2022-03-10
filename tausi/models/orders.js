@@ -53,11 +53,10 @@ const orderSchema = new Schema({
     cartId:{
         type:Schema.Types.ObjectId,
         ref:"cartModel",
-        required:true
     }
 }, {
     timestamps: true,
-    collection: "ORDERS"
+    collection: "Orders"
 });
 
 const {
@@ -74,15 +73,15 @@ orderSchema.pre("save", async function(next){
         next("User must be registered.")
       }
       
-      var calculate = function(){
-          var price = 0
-          this.products.forEach(element => {
-            // TODO:  confirm the status of this calculation
-            price += element.quantity * element.price
-          });
-          return price;
-      } 
-      this.totalPrice = calculate()
+    //   var calculate = function(){
+    //       var price = 0
+    //       this.products.forEach(element => {
+    //         // TODO:  confirm the status of this calculation
+    //         price += element.quantity * element.price
+    //       });
+    //       return price;
+    //   } 
+    //   this.totalPrice = calculate()
       
       
       next();
@@ -112,5 +111,5 @@ statics.updateStatus = async function(orderId){
 
 
 
-var orderModel = mongoose.model("ORDERS", orderSchema)
+var orderModel = mongoose.model("Orders", orderSchema)
 module.exports = orderModel;
