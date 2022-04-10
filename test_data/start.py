@@ -20,7 +20,7 @@ def send_user_data():
 def send_category_data():
     try:
         data = categories()
-        for i, j in stream_data(data):
+        for j in stream_data(data):
             send('http://127.0.0.1:5000/categories/add', data=j)
 
     except Exception as e:
@@ -38,6 +38,6 @@ def send_product_data():
 
 
 if __name__ == "__main__":
-    send_user_data()
-    send_category_data()
+    # send_user_data()
+    # send_category_data()
     send_product_data()

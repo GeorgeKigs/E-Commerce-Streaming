@@ -24,10 +24,11 @@ router.post('/add',async (res,req,next)=>{
 
     for (const key in data.products) {
       const element = data.products[key];
-
+      // console.log(element)
       const product = await productModel.findOne({
         productNumber:element.product
       },{_id:1,price:1});
+      console.log(product)
       element.product = product._id;
       element.price = product.price;
     }
