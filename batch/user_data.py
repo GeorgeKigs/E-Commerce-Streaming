@@ -1,4 +1,3 @@
-from grpc import unary_stream_rpc_method_handler
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as func
 import json
@@ -7,7 +6,7 @@ import pyspark.sql as sql
 spark = SparkSession.builder\
     .master('local')\
     .config("spark.mongodb.input.uri", "mongodb://127.0.0.1/test")\
-    .config("spark.mongodb.output.uri", "mongodb://127.0.0.1/test")\
+    .config("spark.mongodb.output.uri", "mongodb://127.0.0.1/test_analysis")\
     .getOrCreate()
 
 spark.sparkContext.setLogLevel("WARN")
@@ -21,7 +20,7 @@ order_data = spark.read.format("com.mongodb.spark.sql.DefaultSource")\
     .option("collection", 'Orders')\
     .load().createOrReplaceTempView("order_data")
 
-
+# Extraction of data
 u_data = spark.sql(
     """SELECT
     _id.oid as User_id,
@@ -46,6 +45,7 @@ o_data = spark.sql(
     from order_data
     """
 )
+# modification of data
 o_data = o_data.withColumn(
     "total_price",
     func.expr("""round(
@@ -80,7 +80,9 @@ o_data = o_data.withColumn(
          ].oid""")
 )
 
+# writing the data in mongodb
 
+# joining of data
 join_stmt = u_data['User_id'] == o_data["u_id"]
 joined_data = u_data.join(o_data, join_stmt, "inner")
 
@@ -104,7 +106,9 @@ user_order_summary = user_order_data\
 user_order_summary = user_order_summary.withColumnRenamed(
     "User_id", "user_id_sum"
 )
+
 cols = [i for i in user_order_summary.columns]
+
 user_order_summary = user_order_summary.join(
     user_order_data,
     user_order_data["User_id"] == user_order_summary["user_id_sum"]
@@ -113,6 +117,7 @@ user_order_summary = user_order_summary.join(
 ).select(
     *cols, func.col("most_exp_prod")
 )
+
 cols = [i for i in user_order_summary.columns]
 
 user_order_summary = user_order_summary.join(
@@ -125,10 +130,22 @@ user_order_summary = user_order_summary.join(
 )
 
 
-# avg
+# // avg
 # categories
 # cart to order transition
 # user_order_data.show(1)
 
 user_order_summary.show(1)
-user_order_summary.printSchema()
+user_order_summary.write\
+    .format("com.mongodb.spark.sql.DefaultSource")\
+    .option("database", "test_analysis")\
+    .option("collection", "userOrder")\
+    .mode("overwrite")\
+    .save()
+o_data.write\
+    .format("com.mongodb.spark.sql.DefaultSource")\
+    .option("database", "test_analysis")\
+    .option("collection", "Orders")\
+    .mode("overwrite")\
+    .save()
+
