@@ -11,8 +11,8 @@ router.post('/register',async (res,req,next)=>{
   try {
   
     console.log(res.body)
-    var user = new userModel(res.body);
-    await user.save()
+    // var user = new userModel(res.body);
+    // await user.save()
     
     req.status(200).json(
       {"success":true,"return":0}
