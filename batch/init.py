@@ -17,12 +17,10 @@ def initMongoBatch(db: str = "test", dw: str = "test_analysis"):
 
 def getData(db: str, collection: str):
     spark = initMongoBatch()
-    data = spark.read.format("com.mongodb.spark.sql.DefaultSource")\
+    spark.read.format("com.mongodb.spark.sql.DefaultSource")\
         .option("database", db)\
         .option("collection", collection)\
         .load().createOrReplaceTempView(collection)
-
-    return data
 
 
 def writeData(df, dw, collection):
