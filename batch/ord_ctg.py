@@ -1,29 +1,15 @@
 from pyspark.sql import functions as func
 from pyspark.sql import SparkSession
 
+from batch.init import getData, initMongoBatch, writeData
+from batch.user_data import order_Data
 
-spark = SparkSession.builder\
-    .master("local")\
-    .config("spark.mongodb.input.uri", "mongodb://127.0.0.1/test")\
-    .config("spark.mongodb.output.uri", "mongodb://127.0.0.1/test_analysis")\
-    .getOrCreate()
 
-spark.sparkContext.setLogLevel("WARN")
+spark = initMongoBatch()
+prod_data = getData(db="test", collection="Products")
+carts = getData(db="test", collection="categories")
+order_data = order_Data()
 
-prod_data = spark.read.format("com.mongodb.spark.sql.DefaultSource")\
-    .option("database", "test")\
-    .option("collection", "Products")\
-    .load().createOrReplaceTempView("products")
-
-carts = spark.read.format("com.mongodb.spark.sql.DefaultSource")\
-    .option("database", "test")\
-    .option("collection", "categories")\
-    .load().createOrReplaceTempView("categories")
-
-order_data = spark.read.format("com.mongodb.spark.sql.DefaultSource")\
-    .option("database", "test")\
-    .option("collection", 'Orders')\
-    .load().createOrReplaceTempView("order_data")
 
 pr_ct = spark.sql(
     """
@@ -50,7 +36,7 @@ o_data = spark.sql(
         complete,
         user,
         products
-    from order_data
+    from Orders
     """
 ).withColumn(
     "products",
@@ -80,9 +66,4 @@ orderCatAnalysis = o_data\
 
 o_data.printSchema()
 # o_data.show(3)
-orderCatAnalysis.write\
-    .format("com.mongodb.spark.sql.DefaultSource")\
-    .option("database", "test_analysis")\
-    .option("collection", "orderCategory")\
-    .mode("overwrite")\
-    .save()
+writeData(orderCatAnalysis, "test_analysis", "orderCategory")

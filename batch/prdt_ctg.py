@@ -1,13 +1,10 @@
 from pyspark.sql import functions as func
 from pyspark.sql import SparkSession
 
+from batch.init import initMongoBatch
 
-spark = SparkSession.builder\
-    .master("local")\
-    .config("spark.mongodb.input.uri", "mongodb://127.0.0.1/test")\
-    .config("spark.mongodb.output.uri", "mongodb://127.0.0.1/test_analysis")\
-    .getOrCreate()
-spark.sparkContext.setLogLevel("WARN")
+
+spark = initMongoBatch()
 
 prod_data = spark.read.format("com.mongodb.spark.sql.DefaultSource")\
     .option("database", "test")\
