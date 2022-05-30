@@ -1,11 +1,27 @@
-import {Schema,model} from 'mongoose';
+import {Schema,model,Model,Types,Document} from 'mongoose';
 import {cartModel} from "./cart";
 import {userModel} from "./users";
 
 
+interface prodsInt extends Document{
+    product:Types.ObjectId,
+    price:number,
+    quantity: number
+}
+interface orderInt{
+    orderNumber:number,
+    user:Types.ObjectId,
+    products:Types.DocumentArray<prodsInt>,
+    complete:boolean,
+    cartId:Types.ObjectId,
+    stage:string
+}
+interface staticInt extends Model<orderInt>{
+    updateStatus(orderId:string):Promise<boolean>
+}
 
 
-const orderSchema = new Schema({
+const orderSchema = new Schema<orderInt,staticInt>({
     // Identified by orderNumber
     orderNumber:{
         type:Number
@@ -42,11 +58,7 @@ const orderSchema = new Schema({
         enum: ['Shipped','Resolved','Cancelled','On Hold',
         'Disputed','In Process']
     },
-    totalPrice:{
-        type:Number,
-        default:0,
-        required:true
-    },
+
     //get the cartId based on the orderNo
     cartId:{
         type:Schema.Types.ObjectId,
@@ -63,51 +75,31 @@ const {
 } = orderSchema;
 
 orderSchema.pre("save", async function(next){
-    try {
       this.complete = false;
       let user = await userModel.findById(this.user); 
-
       if (!user){
-        next("User must be registered.")
+        let error = new Error("User must be registered.")
+        next(error)
       }
       
-    //   var calculate = function(){
-    //       var price = 0
-    //       this.products.forEach(element => {
-    //         // TODO:  confirm the status of this calculation
-    //         price += element.quantity * element.price
-    //       });
-    //       return price;
-    //   } 
-    //   this.totalPrice = calculate()
-      
-      
       next();
-    } catch (error) {
-        console.log(error)
-        next(error)
-    }
 })
 
-statics.updateStatus = async function(orderId){
-    try{
-        var order = await orderModel.findById(orderId,{cartId:1});
-        if(!order){
-            next("Must be a registered user")
-        }
-        await order.updateOne(
-            {_id:orderId},
-            {
-                $set:{complete:true}
-            })
-        await cartModel.deleteOne({_id:order.cartId})
-    }catch(error){
-        console.log(error)
-        next(error)
+statics.updateStatus = async function(orderId:string):Promise<boolean>{
+
+    var order = await orderModel.findByIdAndUpdate(
+        orderId, {
+            $set:{complete:true}
+        },{cartId:1}
+        );
+    if(!order){
+        return true
     }
+
+    return false
 }
 
 
 
-var orderModel = model("Orders", orderSchema)
+var orderModel = model<orderInt,staticInt>("Orders", orderSchema)
 export {orderModel};

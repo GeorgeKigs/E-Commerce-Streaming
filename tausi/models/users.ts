@@ -1,17 +1,38 @@
 /**
 Schema for the new users registered within the organisation */
 
-import { Schema,model } from "mongoose";
-
-var {
-    hashPassword,
-    sendCodeMail,
-    comparePassword
-} = require("./misc")
+import { Schema,model,Model,Types,Document } from "mongoose";
+import {hashPassword,sendCodeMail,comparePassword} from "./misc";
 
 
-// ! Custom required for details regarding phone Number and email
-const user = new Schema({
+interface returnInt extends Document{
+    _id:Types.ObjectId,
+    customerNumber:number,
+    firstName:string,
+    lastName: string,
+    email:string,
+    phoneNumber:number,
+}
+interface userInt extends returnInt{
+    _id:Types.ObjectId,
+    password: string,
+    registered: {
+        status: boolean,
+        when:Date
+    },
+    deleted: {
+        status:boolean,
+        when: Date
+    }
+}
+interface staticsInt extends Model<userInt>{
+    findByEmail(email:string):Promise<Document<returnInt>|null>,
+    findByPhoneNumber(phoneNumber:number):Promise<Document<returnInt>|null>
+    authenticate(identifier:string|number, password:string, host:string):Promise<Document<returnInt>|null>
+}
+
+
+const user = new Schema<userInt>({
     customerNumber:{
         type:Number
     },
@@ -58,23 +79,7 @@ const user = new Schema({
             type: Date,
             default: Date.now
         }
-    },
-    loginTracker: [{
-        location: {
-            type: String //API to check the location of an IP Address
-        },
-        ipAddress: {
-            type: String
-        },
-        time: {
-            type: Date,
-            default: Date.now
-        },
-        access: {
-            type: String,
-            // remenber to add the different modes using enum
-        }
-    }]
+    }
 }, {
     collection: 'user',
     timestamps: {
@@ -83,17 +88,16 @@ const user = new Schema({
     }
 })
 
-const {
-    methods,
-    statics
-} = user;
 
+let createError = (message:string):Error=>{
+    return new Error(message);
+}
 
 user.pre('save', async function (next) {
-    try {
+    
 
         if (!this.phoneNumber && !this.email) {
-            next('input phoneNumber and/or email')
+            next(createError('input phoneNumber and/or email'));
         }
         // console.log(this.email,this.phoneNumber)
         var user = await userModel.findOne({
@@ -105,43 +109,41 @@ user.pre('save', async function (next) {
         })
 
         if (user) {
-            next("The user already exists")
+            next(createError("The user already exists"))
         }
         if (this.password.length < 8) {
-            next("password.length < 8")
+            next(createError("password.length < 8"))
         }
         var hash = await hashPassword(this.password)
-        /** 
-         * setting the required values in case they 
-         * are overwritten in the schema sent
-         */
+
         this.password = hash;
         this.registered.status = false;
         this.deleted.status = false;
 
         next();
-    } catch (error) {
-        console.log(RangeError)
-        next(error)
-    }
+    
 
 })
-// ! review this. create seperate functions to deal with each scenario.
+
 
 user.pre('findOneAndUpdate', async function (next) {
-    try {
-        //check if there is a password to prevent it from being updated
-        if (this._update.password || this._update.email || this._update.phoneNumber) {
-            next("Cannot such personal details")
-        }
-        // // ! why is this necessary
-        next();
-    } catch (error) {
-        next(error)
+
+    //check if there is a password to prevent it from being updated
+    //@ts-ignore
+    if (this._update.password || this._update.email || this._update.phoneNumber) {
+        next(createError("Cannot update such personal details"))
     }
+
+    next();
+
 })
 
-statics.updatePassword = async function (email, password) {
+const {
+    statics,
+    methods
+} = user
+
+user.static("updatePassword", async function updatePassword(email:string, password:string):Promise<boolean> {
     var hash = await hashPassword(password)
     const user = userModel.findOneAndUpdate({
         email
@@ -151,14 +153,14 @@ statics.updatePassword = async function (email, password) {
         }
     })
     if (!user) {
-        return False
+        return false
     }
     return true
-}
+})
 
 // soft delete for the users
-statics.deleteUser = async function (identifier) {
-    if (identifier instanceof Number) {
+statics.deleteUser = async function (identifier:string|number) {
+    if (typeof identifier == "number") {
         var userResults = await userModel.findOneAndUpdate({
             phoneNumber: identifier
         }, {
@@ -185,18 +187,18 @@ statics.deleteUser = async function (identifier) {
 }
 
 methods.sendCodeMail = async function () {
-    try {
-        var details = await userModel.findByEmail(this.email)
+    var details:Document<returnInt>|null= await userModel.findByEmail(this.email)
+    if (details){
         await sendCodeMail(details)
         return true
-    } catch (error) {
-        return null
+    }else{
+        return false
     }
+    
 }
 
-statics.authenticate = async function (identifier, password, host) {
-    try {
-        if (identifier instanceof Number) {
+statics.authenticate = async function (identifier:string|number, password:string, host:string):Promise<boolean> {
+        if (typeof identifier == "number") {
             var details = await userModel.findOne({
                 phoneNumber: identifier
             }).select("password")
@@ -205,57 +207,27 @@ statics.authenticate = async function (identifier, password, host) {
                 email: identifier
             }).select("password")
         }
-        // console.log(details)
+
         if (!details) {
             return false
         }
         var result = await comparePassword(password, details.password)
-        // console.log(result)
-
-        if (result) {
-            if (identifier instanceof Number) {
-                var userResults = await userModel.findOneAndUpdate({
-                    phoneNumber: identifier
-                }, {
-                    $push: {
-                        ipAddress: host
-                    }
-                }).select("firstName lastName email phoneNumber registered");
-                return userResults;
-            } else {
-                var userResults = await userModel.findOneAndUpdate({
-                    email: identifier
-                }, {
-                    $push: {
-                        ipAddress: host
-                    }
-                }).select("firstName lastName email phoneNumber registered");
-                return userResults;
-            }
-
-        }
-
-        return false
-    } catch (error) {
-        throw error
-    }
-
+        return result
 }
 
-statics.findByPhoneNumber = async function (number) {
-    //  todo: validate input 
-    if (!number instanceof Number) {
-        return null
+statics.findByPhoneNumber = async function (phoneNumber:number):Promise<returnInt>  {
+    if (typeof phoneNumber!= "number") {
+        throw createError("Must be a number")
     }
     var details = await this.findOne({
-        phoneNumber: number
+        phoneNumber: phoneNumber
     }).select("firstName lastName email phoneNumber registered");
     return details;
 }
 
-statics.findByEmail = async function (email) {
+statics.findByEmail = async function (email:string):Promise<returnInt|null>{
     email = email.toLowerCase();
-    var details = await this.findOne({
+    var details: returnInt|null = await userModel.findOne({
         email
     }).select("firstName lastName email phoneNumber registered");
     return details;
@@ -263,6 +235,6 @@ statics.findByEmail = async function (email) {
 
 
 
-const userModel = model('USERS', user)
+const userModel = model<userInt,staticsInt>('USERS', user)
 
-export {userModel};
+export {userModel,returnInt};
