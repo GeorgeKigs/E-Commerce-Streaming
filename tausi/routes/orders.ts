@@ -1,8 +1,11 @@
-var express = require("express");
-const cartModel = require("../models/cart");
-const orderModel = require("../models/orders");
-const productModel = require("../models/products");
-const userModel = require("../models/users");
+import express,{Request,Response,NextFunction}  from 'express';
+import { cartModel } from '../models/cart';
+import { orderModel } from '../models/orders';
+import { productModel } from '../models/products';
+import { userModel } from '../models/users';
+
+
+
 var router = express.Router();
 
 /* GET users listing. */
@@ -65,4 +68,5 @@ router.post("/add", async (res, req, next) => {
 });
 
 router.post("");
-module.exports = router;
+
+export {router as ordersRouter}

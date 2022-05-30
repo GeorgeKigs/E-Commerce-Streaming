@@ -1,18 +1,21 @@
-var express = require('express');
-const cartModel = require('../models/cart');
-const productModel = require('../models/products');
-const userModel = require('../models/users');
+import express,{Request,Response,NextFunction}  from 'express';
+import { cartModel } from '../models/cart';
+import { productModel } from '../models/products';
+import { userModel } from '../models/users';
+
+
+
 var router = express.Router();
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
+router.get('/', (req:Request, res:Response, next:NextFunction)=>{
   res.send('respond with a resource');
 });
 
-router.post('/add',async (res,req,next)=>{
+router.post('/add',async (req:Request, res:Response, next:NextFunction)=>{
   try {
-    // console.log(res.body)
-    var data = res.body
+
+    var data = req.body
     // find the users in the system
     const user = await userModel.findOne({
       customerNumber:data.user
@@ -24,7 +27,7 @@ router.post('/add',async (res,req,next)=>{
 
     for (const key in data.products) {
       const element = data.products[key];
-      // console.log(element)
+      
       const product = await productModel.findOne({
         productNumber:element.product
       },{_id:1,price:1});
@@ -37,7 +40,7 @@ router.post('/add',async (res,req,next)=>{
     await cart.save()
 
 
-    req.json(
+    res.json(
       {"success":true,"return":0}
     )
   } catch (error) {
@@ -47,4 +50,4 @@ router.post('/add',async (res,req,next)=>{
 })
 
 router.post('')
-module.exports = router;
+export {router as cartRouter};

@@ -1,15 +1,13 @@
 /**
 Schema for the new users registered within the organisation */
-var mongoose = require('mongoose')
+
+import { Schema,model } from "mongoose";
+
 var {
     hashPassword,
     sendCodeMail,
     comparePassword
 } = require("./misc")
-
-const {
-    Schema
-} = mongoose
 
 
 // ! Custom required for details regarding phone Number and email
@@ -265,6 +263,6 @@ statics.findByEmail = async function (email) {
 
 
 
-const userModel = mongoose.model('USERS', user)
+const userModel = model('USERS', user)
 
-module.exports = userModel;
+export {userModel};

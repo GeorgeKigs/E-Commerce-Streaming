@@ -1,10 +1,8 @@
-const mongoose = require("mongoose");
-const cartModel = require("./cart");
-const userModel = require("./users");
+import {Schema,model} from 'mongoose';
+import {cartModel} from "./cart";
+import {userModel} from "./users";
 
-const {
-    Schema
-} = mongoose;
+
 
 
 const orderSchema = new Schema({
@@ -111,5 +109,5 @@ statics.updateStatus = async function(orderId){
 
 
 
-var orderModel = mongoose.model("Orders", orderSchema)
-module.exports = orderModel;
+var orderModel = model("Orders", orderSchema)
+export {orderModel};

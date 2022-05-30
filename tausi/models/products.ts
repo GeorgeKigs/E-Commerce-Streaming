@@ -1,10 +1,6 @@
-/** 
-Schema for the products used within the orfanisation  */
-const mongoose = require("mongoose")
-const { categoryModel } = require('./categories')
-const {
-    Schema
-} = mongoose;
+
+import { Schema,model,Model } from "mongoose";
+import categoryModel from "./categories";
 
 
 const productSchema = new Schema({
@@ -77,5 +73,5 @@ statics.findByTagName = async function (tagName) {
     const details = await productModel.find({"tags.tagname":tagName});
 }
 
-var productModel = mongoose.model("Products", productSchema)
-module.exports = productModel;
+var productModel = model("Products", productSchema)
+export {productModel}

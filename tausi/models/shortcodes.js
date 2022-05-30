@@ -3,11 +3,8 @@
 * to the users as they try reset their passwords
 *
 */
-const mongoose = require("mongoose");
+import {Schema,model} from "mongoose";
 
-const {
-    Schema
-} = mongoose;
 
 const shortCodeSchema = new Schema({
     email: {
@@ -34,7 +31,7 @@ const shortCodeSchema = new Schema({
 
 const {
     method,
-    static
+    statics
 } = shortCodeSchema;
 
 shortCodeSchema.pre('save', function (next) {
@@ -57,14 +54,14 @@ method.findByEmail = async function (email) {
     return details;
 }
 
-static.findByPhoneNumber = async function (phoneNumber) {
+statics.findByPhoneNumber = async function (phoneNumber) {
     details = await this.findOne({
         phoneNumber
     })
     return details;
 }
 
-static.verifyByEmail = async function (email, code) {
+statics.verifyByEmail = async function (email, code) {
     var details = this.findByEmail(email)
     if (details) {
         if (details.code === code) {
@@ -83,4 +80,5 @@ method.verifyByPhoneNumber = async function (phoneNumber, code) {
     }
 }
 
-var db = module.exports = mongoose.model('Short_Codes', shortCodeSchema)
+var db = model('Short_Codes', shortCodeSchema)
+export { db as shortCodeDb}

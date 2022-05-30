@@ -1,16 +1,20 @@
-var express = require('express');
-const { categoryModel } = require('../models/categories');
-const productModel = require('../models/products');
+import { productModel } from "../models/products";
+import express,{Request,Response,NextFunction}  from 'express';
+import categoryModel from "../models/categories";
+
+
+
 var router = express.Router();
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
+
+router.get('/', function(req:Request,res:Response,next:NextFunction) {
   res.send('respond with a resource');
 });
 
-router.post('/add',async (res,req,next)=>{
+router.post('/add',async (req:Request,res:Response,next:NextFunction)=>{
   try {
-    let product = res.body;
+
+    let product = req.body;
 
     const id = await categoryModel.findOne({
       "categoryName":product.productLine
@@ -23,7 +27,7 @@ router.post('/add',async (res,req,next)=>{
     const products = new productModel(product)
     await products.save()
 
-    req.json(
+    res.json(
       {"success":true,"return":0}
     )
   } catch (error) {
@@ -32,4 +36,5 @@ router.post('/add',async (res,req,next)=>{
 })
 
 router.post('')
-module.exports = router;
+
+export {router as productsRouter}
