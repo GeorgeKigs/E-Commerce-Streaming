@@ -47,7 +47,6 @@ const productSchema = new Schema({
     collection: "Products"
 })
 const {
-    methods,
     statics
 } = productSchema;
 

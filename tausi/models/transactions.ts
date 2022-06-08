@@ -3,18 +3,14 @@ Schema for the MPesa transactions that are taking place within the organisation
  */
 import {Schema,model,Types,Model,Document} from "mongoose";
 
-interface orderInt extends Document{
-    order:Types.ObjectId
-}
 
 interface transId{
     user:Types.ObjectId,
-    orders:Types.DocumentArray<orderInt>,
+    orders:Types.ObjectId,
     mode:string,
     amount:number,
     complete:boolean,
-    transactionId:string,
-    stage:string
+    recieptId:string,
 }
 
 const transactionSchema = new Schema<transId,Model<transId>>({
@@ -22,12 +18,10 @@ const transactionSchema = new Schema<transId,Model<transId>>({
         type: Schema.Types.ObjectId,
         required: true
     },
-    orders: [{
-        order:{
-            type:Schema.Types.ObjectId,
-            ref:"orderModel"
-        }
-    }],
+    orders: {
+        type:Schema.Types.ObjectId,
+        ref:"orderModel"
+    },
     mode:{
         type:String,
         enum:["CASH","MPESA"],
@@ -40,16 +34,13 @@ const transactionSchema = new Schema<transId,Model<transId>>({
         type: Boolean,
         default: false
     },
-    transactionId:{
+    recieptId:{
         type:String
     },
-    stage: {
-        type: String,
-        enum: ['TRANSIT', 'COMPLETE', 'BEGIN']
-    }
+
 }, {
     timestamps: true,
-    collection: "ORDERS"
+    collection: "Transctions"
 });
 
 
