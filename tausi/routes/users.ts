@@ -1,29 +1,27 @@
-import express,{Request,Response,NextFunction}  from 'express';
-import { userModel } from '../models/users';
+import express, { Request, Response, NextFunction } from "express";
 
+import { auth_not_req, auth_req } from "../middleware/auth";
+import {
+  login,
+  registration,
+  update_pass,
+  update_user,
+  forgot_pass,
+  logout,
+  del_user,
+} from "../controllers/users";
 let router = express.Router();
 
 /* GET users listing. */
-router.get('/', (req:Request, res:Response, next:NextFunction)=>{
-  res.send('respond with a resource');
+router.get("/", (req: Request, res: Response, next: NextFunction) => {
+  res.send("respond with a resource");
 });
 
-router.post('/register',async (req:Request, res:Response, next:NextFunction)=>{
-  try {
-  
-    // console.log(req.body)
-    var user = new userModel(req.body);
-    await user.save()
-    
-    res.status(200).json(
-      {"success":true,"return":0}
-    )
-  } catch (error) {
-    next(error)
-  }
-})
-
-router.post('')
-
-
-export {router as usersRouter};
+router.post("/register", auth_not_req, registration);
+router.post("/forgotPassword", auth_not_req, forgot_pass);
+router.post("/login", auth_not_req, login);
+router.post("/updateUser", auth_req, update_user);
+router.post("/changePassword", auth_req, update_pass);
+router.post("/logout", auth_req, logout);
+router.post("/delUser", auth_req, del_user);
+export { router as usersRouter };

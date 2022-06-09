@@ -27,10 +27,11 @@ interface userInt extends returnInt {
 interface staticsInt extends Model<userInt> {
 	findByEmail(email: string): Promise<Document<returnInt> | null>;
 	findByPhoneNumber(phoneNumber: number): Promise<Document<returnInt> | null>;
+	deleteUser(identifier: string | number): Promise<boolean>;
+	updatePassword(email: string, password: string): Promise<boolean>;
 	authenticate(
 		identifier: string | number,
-		password: string,
-		host: string
+		password: string
 	): Promise<Document<returnInt> | null>;
 }
 
@@ -165,7 +166,9 @@ user.static(
 );
 
 // soft delete for the users
-statics.deleteUser = async function (identifier: string | number) {
+statics.deleteUser = async function (
+	identifier: string | number
+): Promise<boolean> {
 	if (typeof identifier == "number") {
 		var userResults = await userModel
 			.findOneAndUpdate(
@@ -199,7 +202,7 @@ statics.deleteUser = async function (identifier: string | number) {
 	}
 
 	if (userResults) {
-		return userResults;
+		return true;
 	}
 	return false;
 };
@@ -218,8 +221,7 @@ methods.sendCodeMail = async function () {
 
 statics.authenticate = async function (
 	identifier: string | number,
-	password: string,
-	host: string
+	password: string
 ): Promise<boolean> {
 	if (typeof identifier == "number") {
 		var details = await userModel
