@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import os from "node:os";
 import jsonwebtoken from "jsonwebtoken";
 import crypto from "crypto";
+import { returnInt } from "./users";
 
 interface mailInter {
 	code: string;
