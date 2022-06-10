@@ -1,29 +1,19 @@
-import express,{Request,Response,NextFunction} from 'express'
+import express, { Request, Response, NextFunction } from "express";
 import catergoryModel from "../models/categories";
+import { add_cat, remove_cat, edit_cat } from "../controllers/categories";
 
-const categoriesRouter:express.IRouter = express.Router();
+const categoriesRouter: express.IRouter = express.Router();
 
 /* GET users listing. */
-categoriesRouter.get('/', function(req:Request,res:Response,next:NextFunction) {
-  res.send('respond with a resource');
-});
-
-categoriesRouter.post('/add',async (req:Request,res:Response,next:NextFunction)=>{
-  try {
-
-    let category = req.body;
-    // console.log(category)
-    let data = new catergoryModel(category);
-    // let data = new 
-    await data.save()
-    
-    res.json(
-      {"success":true,"return":0}
-    );
-  } catch (error) {
-    next(error)
+categoriesRouter.get(
+  "/",
+  function (req: Request, res: Response, next: NextFunction) {
+    res.send("respond with a resource");
   }
-})
+);
 
+categoriesRouter.post("/addCategory", add_cat);
+categoriesRouter.post("/delCategory", remove_cat);
+categoriesRouter.post("/editCategory", edit_cat);
 
-export {categoriesRouter};
+export { categoriesRouter };

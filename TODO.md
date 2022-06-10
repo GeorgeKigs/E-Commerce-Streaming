@@ -2,12 +2,9 @@
 
 ### TAUSI
 
----
-
-3/06/22
-
 - [ ] Create a page for the interfaces used in the mongoose database.
-- [] Add the ratings column for the products
+- [ ] Add the ratings column for the products
+- [ ] Change the implementation of the logout and authorization middleware.
 
 ### streams
 

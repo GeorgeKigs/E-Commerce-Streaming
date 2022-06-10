@@ -35,7 +35,7 @@ interface staticsInt extends Model<userInt> {
 	): Promise<Document<returnInt> | null>;
 }
 
-const user = new Schema<userInt>(
+const user = new Schema<userInt, staticsInt>(
 	{
 		customerNumber: {
 			type: Number,
@@ -246,7 +246,7 @@ statics.authenticate = async function (
 
 statics.findByPhoneNumber = async function (
 	phoneNumber: number
-): Promise<returnInt> {
+): Promise<returnInt | null> {
 	if (typeof phoneNumber != "number") {
 		throw createError("Must be a number");
 	}

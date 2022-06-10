@@ -1,40 +1,23 @@
 import { productModel } from "../models/products";
-import express,{Request,Response,NextFunction}  from 'express';
+import express, { Request, Response, NextFunction } from "express";
 import categoryModel from "../models/categories";
-
-
+import {
+  add_product,
+  del_product,
+  change_price,
+  change_quan,
+} from "../controllers/products";
+import { auth_req } from "../middleware/auth";
 
 var router = express.Router();
 
-
-router.get('/', function(req:Request,res:Response,next:NextFunction) {
-  res.send('respond with a resource');
+router.get("/", function (req: Request, res: Response, next: NextFunction) {
+  res.send("respond with a resource");
 });
 
-router.post('/add',async (req:Request,res:Response,next:NextFunction)=>{
-  try {
+router.post("/add", auth_req, add_product);
+router.post("/delProduct", auth_req, del_product);
+router.post("/changePrice", auth_req, change_price);
+router.post("/changeQuantity", auth_req, change_quan);
 
-    let product = req.body;
-
-    const id = await categoryModel.findOne({
-      "categoryName":product.productLine
-    },{_id:1})
-
-    console.log(id)
-
-    product["category"] = id._id 
-    
-    const products = new productModel(product)
-    await products.save()
-
-    res.json(
-      {"success":true,"return":0}
-    )
-  } catch (error) {
-    next(error)
-  }
-})
-
-router.post('')
-
-export {router as productsRouter}
+export { router as productsRouter };
