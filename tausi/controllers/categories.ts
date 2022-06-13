@@ -15,11 +15,13 @@ const add_cat = async (req: Request, res: Response, next: NextFunction) => {
 	}
 };
 
-const remove_cat = async (
-	req: Request,
-	res: Response,
-	next: NextFunction
-) => {};
+const remove_cat = async (req: Request, res: Response, next: NextFunction) => {
+	var categoryName = req.body.categoryName;
+	var deleted = catergoryModel.deleteCategory(categoryName);
+	res.status(200).json({
+		success: deleted,
+	});
+};
 const edit_cat = async (req: Request, res: Response, next: NextFunction) => {};
 
 export { add_cat, remove_cat, edit_cat };
