@@ -15,7 +15,7 @@ interface categoryInt {
 
 interface staticCartInts extends Model<categoryInt> {
 	findCategoryName(categoryName: string): Promise<categoryInt | null>;
-	delete(categoryName: string): Promise<boolean>;
+	deleteCategory(categoryName: string): Promise<boolean>;
 }
 
 const categorySchema = new Schema<categoryInt, staticCartInts>({
@@ -50,6 +50,25 @@ const categorySchema = new Schema<categoryInt, staticCartInts>({
 
 const { statics } = categorySchema;
 
+categorySchema.pre("findOneAndUpdate", async function (next) {
+	//@ts-ignore
+	if (this._update.categoryPics) {
+		const error = new Error("cannot update the location of a picture");
+		next(error);
+	}
+
+	next();
+});
+
+categorySchema.pre("save", async function (next) {
+	var details = await categoryModel.findCategoryName(this.categoryName);
+	if (details) {
+		const error = new Error("category Already exists");
+		next(error);
+	}
+	next();
+});
+
 statics.findCategoryName = async function (
 	categoryName: string
 ): Promise<categoryInt | null> {
@@ -57,15 +76,15 @@ statics.findCategoryName = async function (
 	return details;
 };
 
-statics.delete = async function (categoryName: string): Promise<boolean> {
-	var details = await categoryModel.findOne({ categoryName });
+statics.deleteCartegory = async function (
+	categoryName: string
+): Promise<boolean> {
+	var details = await categoryModel.findOneAndUpdate(
+		{ categoryName },
+		{ "deleted.status": true, "deleted.when": Date.now() }
+	);
 	return true;
 };
-
-categorySchema.pre("findOneAndUpdate", async function (next) {
-	var details = await categoryModel.findOne({});
-	next();
-});
 
 const categoryModel = model<categoryInt, staticCartInts>(
 	"Category",

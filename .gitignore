@@ -6,3 +6,4 @@ trial*
 *.env
 *.pyc
 .prettierrc
+*.zip
