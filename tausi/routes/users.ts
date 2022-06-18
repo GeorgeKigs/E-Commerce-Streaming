@@ -10,6 +10,7 @@ import {
   logout,
   del_user,
 } from "../controllers/users";
+import { AddrRouter } from "./address";
 let router = express.Router();
 
 /* GET users listing. */
@@ -24,4 +25,6 @@ router.post("/updateUser", auth_req, update_user);
 router.post("/changePassword", auth_req, update_pass);
 router.post("/logout", auth_req, logout);
 router.post("/delUser", auth_req, del_user);
+
+router.use("/addr", AddrRouter);
 export { router as usersRouter };
