@@ -5,7 +5,19 @@ import {
   add_product,
   del_product,
   change_price,
-  change_quan,
+  change_quan,app.use("/", indexRouter);
+  // app.use("/users", usersRouter);
+  app.use("/", indexRouter);
+// app.use("/users", usersRouter);
+
+// app.use("/products", productsRouter);
+// app.use("/orders", ordersRouter);
+// app.use("/cart", cartRouter);
+// app.use("/categories", categoriesRouter);
+  // app.use("/products", productsRouter);
+  // app.use("/orders", ordersRouter);
+  // app.use("/cart", cartRouter);
+  // app.use("/categories", categoriesRouter);
 } from "../controllers/products";
 import { auth_req } from "../middleware/auth";
 

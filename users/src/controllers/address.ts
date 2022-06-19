@@ -1,4 +1,4 @@
-import addrModel from "../models/address";
+import addrModel from "../../models/address";
 import { Request, Response, NextFunction } from "express";
 
 const addAddr = async (req: Request, res: Response, next: NextFunction) => {};

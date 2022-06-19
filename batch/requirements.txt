@@ -2,6 +2,7 @@ argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
 asttokens==2.0.5
 attrs==21.4.0
+autopep8==1.6.0
 backcall==0.2.0
 bleach==4.1.0
 certifi==2021.10.8
@@ -51,6 +52,7 @@ prompt-toolkit==3.0.28
 ptyprocess==0.7.0
 pure-eval==0.2.2
 py4j==0.10.9.3
+pycodestyle==2.8.0
 pycparser==2.21
 Pygments==2.11.2
 pyparsing==3.0.7
@@ -67,6 +69,7 @@ six==1.16.0
 stack-data==0.2.0
 terminado==0.13.2
 testpath==0.6.0
+toml==0.10.2
 tornado==6.1
 traitlets==5.1.1
 urllib3==1.26.8

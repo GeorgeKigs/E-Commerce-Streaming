@@ -1,6 +1,6 @@
 import { productModel } from "../models/products";
 import { Request, Response, NextFunction } from "express";
-import categoryModel from "../models/categories";
+import categoryModel from "../shop/models/categories";
 
 const add_product = async (req: Request, res: Response, next: NextFunction) => {
 	try {

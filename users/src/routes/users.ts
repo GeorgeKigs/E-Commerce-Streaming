@@ -1,20 +1,20 @@
 import express, { Request, Response, NextFunction } from "express";
 
-import { auth_not_req, auth_req } from "../middleware/auth";
+import { auth_not_req, auth_req } from "../../middleware/auth";
 import {
-  login,
-  registration,
-  update_pass,
-  update_user,
-  forgot_pass,
-  logout,
-  del_user,
+	login,
+	registration,
+	update_pass,
+	update_user,
+	forgot_pass,
+	logout,
+	del_user,
 } from "../controllers/users";
 let router = express.Router();
 
 /* GET users listing. */
 router.get("/", (req: Request, res: Response, next: NextFunction) => {
-  res.send("respond with a resource");
+	res.send("respond with a resource");
 });
 
 router.post("/register", auth_not_req, registration);

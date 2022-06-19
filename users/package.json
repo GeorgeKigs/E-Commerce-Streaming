@@ -1,12 +1,10 @@
 {
-  "name": "tausi",
+  "name": "users-tausi",
   "version": "1.0.0",
   "description": "Shopping application",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
-    "dev": "nodemon ./src/index.ts",
-    "build": "tsc -p ."
+    "test": "mocha"
   },
   "author": "",
   "license": "ISC",

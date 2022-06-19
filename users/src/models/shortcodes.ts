@@ -98,4 +98,10 @@ statics.verifyByPhoneNumber = async function (phoneNumber:number, code:string):P
 }
 
 var db = model<shortCodeInt,shortCodeMethodInt>('Short_Codes', shortCodeSchema)
-export { db as shortCodeDb}
+export { db as shortCodeDb}app.use("/", indexRouter);
+// app.use("/users", usersRouter);
+
+// app.use("/products", productsRouter);
+// app.use("/orders", ordersRouter);
+// app.use("/cart", cartRouter);
+// app.use("/categories", categoriesRouter);
