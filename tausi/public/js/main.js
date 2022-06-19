@@ -23,8 +23,7 @@ const login_function = async (event) => {
 	values.delete("rem_check");
 
 	try {
-		const response = await fetch("/users/auth/login");
-		const json = await response.json();
+		const json = await send_data("/users/login", values);
 		if (rem) {
 			localStorage.setItem("authorization", json["token"]);
 		}
@@ -45,14 +44,17 @@ const sign_up_function = async (event) => {
 	event.preventDefault();
 
 	let values = get_form_data("registration_form");
+
 	let reg_data = {
 		first_name: values["first_name"],
 		last_name: values["last_name"],
 		email: values["email"],
 		phoneNumber: values["phone_number"],
 	};
+
 	var new_account = values["customCheck2"];
 	var change_addr = values["customCheck3"];
+
 	let addr_data = {
 		email: values.email,
 		street: values["street_address"],
@@ -62,29 +64,46 @@ const sign_up_function = async (event) => {
 	try {
 		// send the registration data to the db
 		if (new_account) {
-			var registration = await send_data("/users/auth/registration", reg_data);
-			var addr_dets = await send_data("/users/address/new", addr_data);
-		}
-
-		/* store various data points such as:
-		 * phone_number for mpesa
-		 * registration status
-		 */
-	} catch (error) {
-		console.error(error);
-	}
-	try {
-		if (change_addr) {
-			var addr_dets = send_data("/users/address/new", addr_data);
+			await registration(reg_data);
+			await user_address(addr_data);
+		} else if (change_addr) {
+			await user_address(addr_data);
 		}
 	} catch (error) {
 		console.error(error);
 	}
 };
 
+const registration = async (data) => {
+	var registration = await send_data("/users/auth/registration", reg_data);
+	/* store various data points such as:
+	 * phone_number for mpesa
+	 * registration status
+	 */
+	var storedData = JSON.stringify({
+		phoneNumber: data["phoneNumber"],
+		authorization: "",
+		status: "",
+	});
+	localStorage.setItem("userData", storedData);
+};
+
+const user_address = async (data) => {
+	var addr_dets = await send_data("/users/address/new", addr_data);
+};
+
 const send_data = async (url, data) => {
 	try {
-		var registration = await fetch("/users/auth/registration");
+		var token = get_user_token();
+		var registration = await fetch(url, {
+			method: "post",
+			body: JSON.stringify(data),
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+				authorization: token,
+			},
+		});
 		const json = await registration.json();
 
 		// return data that is successfull
@@ -95,6 +114,7 @@ const send_data = async (url, data) => {
 		console.error(error);
 	}
 };
+
 const get_form_data = (input_id) => {
 	let input_data = {};
 	let form = document.getElementById(input_id);
@@ -104,3 +124,12 @@ const get_form_data = (input_id) => {
 	});
 	return input_data;
 };
+
+const get_user_token = () => {
+	var token = sessionStorage.getItem("authorization");
+	if (!token) {
+		var token = localStorage.getItem("authorization");
+	}
+	return token;
+};
+export { get_form_data, send_data, get_user_token };
