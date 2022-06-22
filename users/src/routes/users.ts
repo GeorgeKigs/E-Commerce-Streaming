@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 
-import { auth_not_req, auth_req } from "../../middleware/auth";
+import { auth_not_req, auth_req } from "../middleware/auth";
 import {
 	login,
 	registration,

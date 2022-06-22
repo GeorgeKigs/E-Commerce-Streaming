@@ -4,13 +4,16 @@
   "description": "Shopping application",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "dev": "nodemon ./src/server.ts",
+    "build": "tsc -p ."
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@types/bcryptjs": "^2.4.2",
     "@types/cookie-parser": "^1.4.3",
+    "@types/cors": "^2.8.12",
     "@types/http-errors": "^1.8.2",
     "@types/jsonwebtoken": "^8.5.8",
     "@types/mongoose": "^5.11.97",
