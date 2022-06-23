@@ -1,39 +1,80 @@
+// export { get_form_data, send_data, get_user_token };
 /* 
 ? remember to make a uuid for every customer and store it in the local
 ? storage for future reference within the database.
 */
+const check_uuid = () => {
+	var id = localStorage.getItem("uuid");
+	if (id) {
+		return id;
+	}
+	return false;
+};
 
-let login_submit_btn = document.getElementById("login_sub_btn");
-let registration_btn = document.getElementById("registration_btn");
-let checkout_btn = document.getElementById("checkout_btn");
-// add an event listeners
+const gen_uuid = async () => {
+	var id = check_uuid();
+	console.log(id);
+	// localStorage.clear();
+	if (!id) {
+		var id = await (await fetch("/getUUID")).json();
+		localStorage.setItem("uuid", id["uuid"]);
+	}
+	console.log(id);
+	return id;
+};
 
-login_submit_btn.addEventListener("submit", login_function);
-registration_btn.addEventListener("submit", sign_up_function);
-checkout_btn.addEventListener("submit", chechout_function);
+const get_user_token = () => {
+	var token = sessionStorage.getItem("Authorization");
+	if (!token) {
+		var token = localStorage.getItem("Authorization");
+	}
+	return token;
+};
 
-const login_function = async (event) => {
-	event.preventDefault();
+const get_form_data = (input_id) => {
+	let input_data = {};
+	let form = document.getElementById(input_id);
+	let input = form.getElementsByTagName("input");
+	Array.from(input).forEach((item) => {
+		input_data[item.id] = item.value;
+	});
+	return input_data;
+};
 
-	// get the ip address of the user.
-
-	let values = get_form_data("login_form");
-	console.log(values);
-	let rem = values["rem_check"];
-	values.delete("rem_check");
-
+const send_data = async (url, data) => {
 	try {
-		const json = await send_data("/users/login", values);
-		if (rem) {
-			localStorage.setItem("authorization", json["token"]);
+		var headers = {
+			"Content-Type": "application/json",
+			Accept: "application/json",
+		};
+		var token = get_user_token();
+		if (token) {
+			headers["Authorization"] = token;
 		}
-		sessionStorage.setItem("authorization", json["token"]);
+		var registration = await fetch(url, {
+			method: "post",
+			body: JSON.stringify(data),
+			headers,
+		});
+		const json = await registration.json();
+		return json;
 	} catch (error) {
-		console.log(error);
+		console.error(error);
 	}
 };
 
-const chechout_function = async (event) => {
+const logout_function = async (event) => {
+	event.preventDefault();
+	var data = await send_data("/users/logout", {});
+	if (data["success"] == true) {
+		localStorage.removeItem("Authorization");
+		sessionStorage.removeItem("Authorization");
+	} else {
+		handleErrors(data["message"]);
+	}
+};
+
+const checkout_function = async (event) => {
 	// ? check how to use radio buttons
 	event.preventDefault();
 	// if its it cash on delivery push the cart data to the orders
@@ -64,6 +105,8 @@ const sign_up_function = async (event) => {
 	try {
 		// send the registration data to the db
 		if (new_account) {
+			reg_data["uuid"] = gen_uuid();
+
 			await registration(reg_data);
 			await user_address(addr_data);
 		} else if (change_addr) {
@@ -75,61 +118,68 @@ const sign_up_function = async (event) => {
 };
 
 const registration = async (data) => {
-	var registration = await send_data("/users/auth/registration", reg_data);
-	/* store various data points such as:
-	 * phone_number for mpesa
-	 * registration status
-	 */
-	var storedData = JSON.stringify({
-		phoneNumber: data["phoneNumber"],
-		authorization: "",
-		status: "",
-	});
-	localStorage.setItem("userData", storedData);
+	var registration = await send_data("/users/registration", reg_data);
+	if (registration["success"] == true) {
+		localStorage.setItem("phoneNumber", data["phoneNumber"]);
+		localStorage.setItem("uuid", registration["uuid"]);
+		localStorage.setItem("authorzation", registration["token"]);
+		sessionStorage.setItem("Authorization", registration["token"]);
+	} else {
+		handleErrors(registration["message"]);
+	}
+};
+
+const login_function = async (event) => {
+	event.preventDefault();
+
+	// get the ip address of the user.
+	console.log("here");
+	let values = get_form_data("login_form");
+	console.log(values);
+	let rem = document.getElementById("rem_check").checked;
+
+	console.log(rem);
+	delete values["rem_check"];
+
+	try {
+		const json = await send_data("http://localhost:5000/users/login", values);
+		console.log(json);
+		if (json["success"] == true) {
+			if (rem) {
+				localStorage.setItem("Authorization", json["token"]);
+			}
+			sessionStorage.setItem("Authorization", json["token"]);
+			localStorage.setItem("uuid", json["uuid"]);
+		} else {
+			handleErrors(json["message"]);
+		}
+	} catch (error) {
+		console.log(error);
+	}
 };
 
 const user_address = async (data) => {
 	var addr_dets = await send_data("/users/address/new", addr_data);
 };
 
-const send_data = async (url, data) => {
-	try {
-		var token = get_user_token();
-		var registration = await fetch(url, {
-			method: "post",
-			body: JSON.stringify(data),
-			headers: {
-				"Content-Type": "application/json",
-				Accept: "application/json",
-				authorization: token,
-			},
-		});
-		const json = await registration.json();
-
-		// return data that is successfull
-		return json;
-
-		// handle errors sent from the server
-	} catch (error) {
-		console.error(error);
-	}
+const handleErrors = (message) => {
+	console.log(data);
 };
 
-const get_form_data = (input_id) => {
-	let input_data = {};
-	let form = document.getElementById(input_id);
-	let input = form.getElementsByTagName("input");
-	Array.from(input).forEach((item) => {
-		input_data[item.id] = item.value;
-	});
-	return input_data;
+window.onload = () => {
+	console.log("here");
+	gen_uuid();
 };
 
-const get_user_token = () => {
-	var token = sessionStorage.getItem("authorization");
-	if (!token) {
-		var token = localStorage.getItem("authorization");
-	}
-	return token;
-};
-export { get_form_data, send_data, get_user_token };
+let login_submit_btn = document.getElementById("login_form");
+let registration_btn = document.getElementById("registration_btn");
+let checkout_btn = document.getElementById("checkout_btn");
+
+if (login_submit_btn) {
+	login_submit_btn.addEventListener("submit", login_function);
+}
+
+if (registration_btn) {
+	registration_btn.addEventListener("click", sign_up_function);
+	checkout_btn.addEventListener("submit", checkout_function);
+}

@@ -1,4 +1,5 @@
-import express, { Request, Response, NextFunction } from "express";
+import { randomUUID } from "crypto";
+import express, { Request, Response } from "express";
 
 const router = express.Router();
 
@@ -18,6 +19,15 @@ router.get("/cart", (req: Request, res: Response) => {
 	res.render("cart");
 });
 router.get("/shop", (req: Request, res: Response) => {
+	res.render("shop");
+});
+router.get("/getUUID", (req: Request, res: Response) => {
+	var id = randomUUID();
+	res.json({
+		uuid: id,
+	});
+});
+router.get("/product-details", (req: Request, res: Response) => {
 	res.render("shop");
 });
 

@@ -6,7 +6,7 @@ import { hashPassword, sendCodeMail, comparePassword } from "./misc";
 
 interface returnInt extends Document {
 	_id: Types.ObjectId;
-	customerNumber: number;
+	customerNumber: string;
 	firstName: string;
 	lastName: string;
 	email: string;
@@ -29,16 +29,13 @@ interface staticsInt extends Model<userInt> {
 	findByPhoneNumber(phoneNumber: number): Promise<Document<returnInt> | null>;
 	deleteUser(identifier: string | number): Promise<boolean>;
 	updatePassword(email: string, password: string): Promise<boolean>;
-	authenticate(
-		identifier: string | number,
-		password: string
-	): Promise<Document<returnInt> | null>;
+	authenticate(identifier: string | number, password: string): Promise<boolean>;
 }
 
 const user = new Schema<userInt, staticsInt>(
 	{
 		customerNumber: {
-			type: Number,
+			type: String,
 		},
 		firstName: {
 			type: String,
@@ -252,7 +249,7 @@ statics.findByPhoneNumber = async function (
 	}
 	var details = await this.findOne({
 		phoneNumber: phoneNumber,
-	}).select("firstName lastName email phoneNumber registered");
+	}).select("firstName lastName email phoneNumber registered customerNumber");
 	return details;
 };
 
@@ -264,7 +261,7 @@ statics.findByEmail = async function (
 		.findOne({
 			email,
 		})
-		.select("firstName lastName email phoneNumber registered");
+		.select("firstName lastName email phoneNumber registered customerNumber");
 	return details;
 };
 

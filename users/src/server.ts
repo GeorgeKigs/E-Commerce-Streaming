@@ -6,9 +6,10 @@ import path from "path";
 import cookieParser from "cookie-parser";
 import { usersRouter } from "./routes/users";
 import cors from "cors";
+import { connection } from "./utils";
 
 var app = express();
-
+connection();
 // view engine setup
 app.set("views", path.join(__dirname, "../views"));
 app.set("view engine", "ejs");

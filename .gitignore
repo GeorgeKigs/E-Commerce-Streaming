@@ -5,5 +5,5 @@ trial*
 *.ipynb
 *.env
 *.pyc
-.prettierrc
+.prettier*
 *.zip

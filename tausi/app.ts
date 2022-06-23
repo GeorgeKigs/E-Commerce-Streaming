@@ -5,13 +5,6 @@ import express, { Response, Request, NextFunction } from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
 
-import { cartRouter } from "./orders/routes/cart";
-import { categoriesRouter } from "./shop/routes/categories";
-import { usersRouter } from "./users/routes/users";
-import { indexRouter } from "./routes";
-import { productsRouter } from "./shop/products";
-import { ordersRouter } from "./orders/orders";
-
 import { connection } from "./utils";
 
 var app = express();
@@ -27,14 +20,6 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-
-app.use("/", indexRouter);
-app.use("/users", usersRouter);
-
-app.use("/products", productsRouter);
-app.use("/orders", ordersRouter);
-app.use("/cart", cartRouter);
-app.use("/categories", categoriesRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req: Request, res: Response, next: NextFunction) {
