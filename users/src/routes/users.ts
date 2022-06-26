@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
-
+import { addr_router } from "./address";
 import { auth_not_req, auth_req } from "../middleware/auth";
 import {
 	login,
@@ -9,14 +9,15 @@ import {
 	forgot_pass,
 	logout,
 	del_user,
+	getUser,
+	validateUser,
 } from "../controllers/users";
-import { addr_router } from "./address";
+
 let router = express.Router();
 
 /* GET users listing. */
-router.get("/", (req: Request, res: Response, next: NextFunction) => {
-	res.send("respond with a resource");
-});
+router.get("/userId/:userid", getUser);
+router.get("/validateUser/:token", validateUser);
 
 router.use("/address", addr_router);
 router.post("/register", auth_not_req, registration);

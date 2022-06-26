@@ -24,6 +24,7 @@
     "helmet": "^5.1.0",
     "http-errors": "^2.0.0",
     "jsonwebtoken": "^8.5.1",
+    "kafkajs": "^2.0.2",
     "mongoose": "^6.0.12",
     "morgan": "^1.10.0"
   },

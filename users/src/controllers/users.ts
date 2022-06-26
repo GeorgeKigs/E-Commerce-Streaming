@@ -2,13 +2,45 @@ import { NextFunction, Request, Response } from "express";
 import { generateToken } from "../models/misc";
 import createHttpError from "http-errors";
 import { userModel, returnInt } from "../models/users";
+import { getData } from "../middleware/auth";
+
+const getUser = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		var userId = req.params.userid as string;
+		const user = userModel
+			.findById(userId)
+			.select("firstName lastName email phoneNumber registered customerNumber");
+		res.status(200).json({
+			succcess: true,
+			data: user,
+		});
+	} catch (error) {
+		next(createHttpError("Request is invalid"));
+	}
+};
+
+const validateUser = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		var token = req.params.token as string;
+		const result = await getData(token);
+		res.status(200).json({
+			success: true,
+			data: result,
+		});
+	} catch (error) {
+		next(createHttpError("request is invalid"));
+	}
+};
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
 	const identifier = req.body.email;
 	const password = req.body.password;
 
-	// const authenticated = await userModel.authenticate(identifier, password);
-	const authenticated = false;
+	const authenticated = await userModel.authenticate(identifier, password);
 	if (authenticated) {
 		var data = await userModel.findByEmail(identifier);
 
@@ -133,4 +165,6 @@ export {
 	forgot_pass,
 	logout,
 	del_user,
+	validateUser,
+	getUser,
 };

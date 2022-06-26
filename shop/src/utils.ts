@@ -1,4 +1,4 @@
-import { Kafka, Consumer } from "kafkajs";
+import { Consumer, Kafka } from "kafkajs";
 import mongoose from "mongoose";
 import dotenv = require("dotenv");
 
@@ -15,6 +15,7 @@ const connection = async () => {
 const kafka = () => {
 	const client_id = process.env["KAFKA_CLIENTID"];
 	const broker = process.env["KAFKA_BROKER"];
+
 	if (broker) {
 		const kafka = new Kafka({
 			clientId: client_id,
@@ -24,23 +25,6 @@ const kafka = () => {
 	} else {
 		throw Error("Cannot connect to the MQ");
 	}
-};
-
-const produce = async (topic: string, partition: number, message: any) => {
-	var kafka_prod: Kafka = kafka();
-	const producer = kafka_prod.producer({
-		allowAutoTopicCreation: false,
-	});
-	await producer.send({
-		topic,
-		messages: [
-			{
-				key: message["key"],
-				value: message["value"],
-				partition: partition,
-			},
-		],
-	});
 };
 
 abstract class ConsumerKafka {
@@ -71,4 +55,4 @@ abstract class ConsumerKafka {
 	public abstract def_vars(): void;
 }
 
-export { connection, kafka as kafka_client };
+export { connection, kafka as kafka_client, ConsumerKafka };

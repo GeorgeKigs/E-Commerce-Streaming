@@ -1,8 +1,17 @@
+/**
+ * TODO: Add refresher tokens to improve the authorization procedure
+ *
+ */
+
 import { Request, Response, NextFunction } from "express";
 import { returnInt, userModel } from "../models/users";
-import { verifyToken } from "../models/misc";
 import createHttpError from "http-errors";
-import { kafka } from "../utils";
+import dotenv from "dotenv";
+import { verifyToken } from "../models/misc";
+
+import { kafka_client } from "../utils";
+
+dotenv.config({ path: "../../env" });
 
 async function checkUser(data: any): Promise<boolean> {
 	var email: string = data.email;
@@ -82,27 +91,4 @@ const auth_not_req = async (
 	}
 };
 
-const produce = async (topic: string, partition: number, message: string) => {};
-
-const consume = async () => {
-	const consumer = kafka.consumer({
-		allowAutoTopicCreation: false,
-		groupId: "basic_authorization",
-	});
-
-	await consumer.connect();
-	await consumer.subscribe({
-		topic: "basic_auth_topic",
-		fromBeginning: true,
-	});
-	await consumer.run({
-		eachMessage: async ({ topic, partition, message }) => {
-			console.log({
-				key: message.key?.toString(),
-				value: message.value?.toString(),
-			});
-		},
-	});
-};
-
-export { auth_req, auth_not_req };
+export { auth_req, auth_not_req, getData };

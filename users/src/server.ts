@@ -7,13 +7,13 @@ import cookieParser from "cookie-parser";
 import { usersRouter } from "./routes/users";
 import cors from "cors";
 import { connection } from "./utils";
+import { consume } from "./middleware/auth";
 
 var app = express();
+
+// handle the errors that may arise
 connection();
-// view engine setup
-app.set("views", path.join(__dirname, "../views"));
-app.set("view engine", "ejs");
-app.use(express.static(path.join(__dirname, "../public")));
+consume();
 
 app.use(morgan("dev"));
 app.use(helmet());

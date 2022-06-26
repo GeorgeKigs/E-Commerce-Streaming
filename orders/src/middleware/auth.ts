@@ -27,7 +27,7 @@ const get_token = (token: string): false | JwtPayload => {
  */
 const sign_token = (data: any): string => {
 	const secret = process.env["JWT_SECRET_KEY"] as string;
-	data.shop_auth = true;
+	data.order_auth = true;
 	const token = jsonwebtoken.sign(data, secret);
 	return token;
 };
@@ -49,7 +49,7 @@ const auth_req = async (req: Request, res: Response, next: NextFunction) => {
 		var data = get_token(token);
 		if (!data) return next(auth_error);
 
-		if (data.shop_auth) {
+		if (data.order_auth) {
 			return next();
 		} else {
 			const url = process.env["AUTH_URL"] as string;
