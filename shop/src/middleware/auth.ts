@@ -27,6 +27,7 @@ const get_token = (token: string): false | JwtPayload => {
  */
 const sign_token = (data: any): string => {
 	const secret = process.env["JWT_SECRET_KEY"] as string;
+	data.admin = true;
 	data.shop_auth = true;
 	const token = jsonwebtoken.sign(data, secret);
 	return token;
@@ -53,8 +54,10 @@ const auth_req = async (req: Request, res: Response, next: NextFunction) => {
 			return next();
 		} else {
 			const url = process.env["AUTH_URL"] as string;
-			var user_data = fetch(`${url}\\?token=${token}`);
-
+			var user_data = fetch(`${url}/${token}`);
+			// check admin
+			var isadmin = true;
+			if (!isadmin) return next(auth_error);
 			req.body.token = sign_token(user_data);
 			return next();
 		}

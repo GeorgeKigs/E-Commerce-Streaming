@@ -1,6 +1,25 @@
 import { Request, Response, NextFunction } from "express";
+import createHttpError from "http-errors";
 import catergoryModel from "../models/categories";
 
+const getCartegory = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const data = await catergoryModel
+			.find({ "deleted.status": false })
+			.select("-deleted")
+			.limit(10);
+		res.status(100).json({
+			success: true,
+			data: data,
+		});
+	} catch (error) {
+		next(createHttpError("Could not get Categories"));
+	}
+};
 const add_cat = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		let category = req.body;
@@ -24,4 +43,4 @@ const remove_cat = async (req: Request, res: Response, next: NextFunction) => {
 };
 const edit_cat = async (req: Request, res: Response, next: NextFunction) => {};
 
-export { add_cat, remove_cat, edit_cat };
+export { add_cat, remove_cat, edit_cat, getCartegory };

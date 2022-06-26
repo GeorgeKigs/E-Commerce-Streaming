@@ -1,6 +1,5 @@
 import { Schema, model, Types, Model, Document } from "mongoose";
 import { productModel } from "./products";
-import { userModel } from "../../users/models/users";
 
 interface prodInt {
 	product: Types.ObjectId;

@@ -2,11 +2,11 @@ import helmet from "helmet";
 import morgan from "morgan";
 import createHttpError from "http-errors";
 import express, { Response, Request, NextFunction } from "express";
-import path from "path";
 import cookieParser from "cookie-parser";
-import { usersRouter } from "./routes/users";
+import { productsRouter } from "./routes/products";
 import cors from "cors";
 import { connection } from "./utils";
+import { categoriesRouter } from "./routes/categories";
 
 var app = express();
 
@@ -20,9 +20,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-app.use("/users", usersRouter);
-
-// addition of the cors
+app.use("/categories", categoriesRouter);
+app.use("/", productsRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req: Request, res: Response, next: NextFunction) {
