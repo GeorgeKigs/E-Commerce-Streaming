@@ -37,6 +37,25 @@ const sign_token = (data: any): string => {
  * Checks the validity of the token, and if the user is in the database.
  * @params req,res,next
  */
+
+const admin_auth_req = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const url = process.env["ADMIN_URL"];
+		const token = req.body.token;
+		const url_data = req.body.user;
+		if (url_data.admin) {
+			return next();
+		} else {
+			return next(Error("unauthorized"));
+		}
+	} catch (error) {
+		return next(error);
+	}
+};
 const auth_req = async (req: Request, res: Response, next: NextFunction) => {
 	var auth_error = createHttpError("Unauthorised");
 	try {
@@ -50,11 +69,12 @@ const auth_req = async (req: Request, res: Response, next: NextFunction) => {
 		if (!data) return next(auth_error);
 
 		if (data.order_auth) {
+			req.body.user = data;
 			return next();
 		} else {
 			const url = process.env["AUTH_URL"] as string;
-			var user_data = fetch(`${url}\\?token=${token}`);
-
+			var user_data = await (await fetch(`${url}/${token}`)).json();
+			req.body.user = user_data;
 			req.body.token = sign_token(user_data);
 			return next();
 		}
@@ -63,4 +83,4 @@ const auth_req = async (req: Request, res: Response, next: NextFunction) => {
 	}
 };
 
-export { auth_req };
+export { auth_req, admin_auth_req };

@@ -1,175 +1,133 @@
-import { Schema,model,Types, Model,Document } from "mongoose";
+import createHttpError from "http-errors";
+import { Schema, model, Types, Model, Document } from "mongoose";
 
-interface prodInt{
-    product:Types.ObjectId,
-    price:number,
-    available:boolean,
-    quantity:number
+interface cartInt extends Document {
+	orderNumber?: number;
+	user: Types.ObjectId;
+	products: Types.Array<{
+		product: Types.ObjectId;
+		price: number;
+		available: boolean;
+		quantity: number;
+	}>;
 }
 
-interface prod extends prodInt,Document{
-
+interface cartStatics extends Model<cartInt> {
+	addProduct(products: any): Promise<cartInt | null>;
+	removeProduct(products: any): Promise<cartInt | null>;
+	setProdQuantity(products: any): Promise<cartInt | null>;
+	calculatePrice(cartId: string): Promise<number | null>;
+	// removeProductQuantity(products: any): Promise<cartInt | null>;
 }
 
-interface cartInt{
-    orderNumber:number,
-    user:Types.ObjectId,
-    products: Types.DocumentArray<prod>
-}
+const cartSchema = new Schema<cartInt, cartStatics>(
+	{
+		orderNumber: {
+			type: Number,
+		},
 
+		user: {
+			type: Schema.Types.ObjectId,
+			ref: "userModel",
+			required: true,
+		},
 
+		products: [
+			{
+				product: {
+					type: Schema.Types.ObjectId,
+					ref: "productModel",
+					required: true,
+				},
+				price: {
+					type: Number,
+					required: true,
+				},
+				available: {
+					type: Boolean,
+					default: true,
+				},
+				quantity: {
+					type: Number,
+					required: true,
+					default: 1,
+				},
+			},
+		],
+	},
+	{
+		timestamps: true,
+		collection: "Cart",
+	}
+);
 
-const cartSchema = new Schema<cartInt,Model<cartInt>>({
-    
-    orderNumber:{
-        type:Number
-    },
-    
-    user: {
-        type: Schema.Types.ObjectId,
-        ref:"userModel",
-        required: true
-    },
-    
-    products: [{
-        
-        product: {
-            type: Schema.Types.ObjectId,
-            ref: "categoryModel",
-            required:true
-        },
-        price: {
-            type: Number,
-            required: true
-        },
-        available:{
-            type:Boolean,
-            default:true
-        },
-        quantity: {
-            type: Number,
-            required: true,
-            default: 1
-        }
-    }],
-    
-}, {
-    timestamps: true,
-    collection: "Cart"
-})
+const { statics } = cartSchema;
 
-const {
-    statics,
-    methods
-} = cartSchema
-
-// cartSchema.pre("save", async function(next){
-
-//       let user = await userModel.findById(this.user); 
-//       if (!user){
-//         let error  = new Error("User must be registered.")
-//         next(error);
-//       }
-//       next();
- 
-// });
-
-// statics.addProduct = async function(products:cartInt){
-
-//     const user = await cartModel.findOne({user:products.user})
-//     if(!user){
-//         Error("Cannot update the user details");
-//     }
-
-//     products.products.forEach(async (element) =>{ 
-//         const id = element.product;
-//         const product = await productModel.findById(id,{price:1})
-//         cartModel.updateOne(
-//             {user:products.user},
-//             {$push:{
-//                 products:{
-//                     product:id,
-//                     quantity: element.quantity,
-//                     price:product.price
-//                 }
-//             }}
-//             )
-//     })
-// };
-
-statics.removeProduct = async function(products:cartInt){
-
-    const user = await cartModel.findOne({user:products.user})
-    if(!user){
-        Error("Cannot update the user details");
-    }
-    products.products.forEach(async element=>{
-        const id = element.product;
-        await cartModel.updateOne(
-            {user:products.user},
-            {$pull:{
-                products:{
-                    product:id,
-                }
-            }}
-            )
-    })
+statics.addProduct = async function (products: any): Promise<cartInt | null> {
+	const id = products.product;
+	const product = await (await fetch(`{PROD_URL}/${id}`)).json();
+	// check the quantity of the products
+	var data = await cartModel.findOneAndUpdate(
+		{ user: products.user },
+		{
+			$push: {
+				products: {
+					product: id,
+					price: product.price,
+					quantity: products.quantity,
+				},
+			},
+		},
+		{ new: true }
+	);
+	return data;
 };
 
-statics.addProductQuantity = async function(products:cartInt){
-
-    const user = await cartModel.findOne({user:products.user})
-    
-    products.products.forEach(async element=>{
-        const id = element.product;
-        await cartModel.updateOne(
-            {user:products.user,"products.0.product_id":id},
-            {
-                $inc:{"products.$.quantity":element.quantity}  
-            }
-            )
-    })
+statics.removeProduct = async function (
+	products: cartInt
+): Promise<cartInt | null> {
+	var prdts = products.products[0];
+	const id = prdts.product;
+	var data = await cartModel.findOneAndUpdate(
+		{ user: products.user },
+		{
+			$pull: {
+				products: {
+					product: id,
+				},
+			},
+		},
+		{ new: true }
+	);
+	return data;
 };
 
-statics.removeProductQuantity = async function(products:cartInt){
+statics.setProdQuantity = async function (
+	products: any
+): Promise<cartInt | null> {
+	const id = products.product;
 
-    const user = await cartModel.findOne({user:products.user})
-    
-     products.products.forEach(async element=>{
-        const id = element.product;
-        await cartModel.updateOne(
-            {user:products.user,"products.0.product_id":id},
-            {
-                $inc:{"products.$.quantity":-element.quantity}
-            }
-            )
-    })
+	var data = await cartModel.findOneAndUpdate(
+		{ user: products.user, "products.product_id": id },
+		{
+			$set: { "products.$.quantity": products.quantity },
+		},
+		{ new: true }
+	);
+	return data;
 };
+statics.calculatePrice = async (
+	cart_id: cartInt["_id"]
+): Promise<number | null> => {
+	const cart = await cartModel.findById(cart_id);
+	let total_price = 0;
+	if (cart) {
+		for await (const iterator of cart.products) {
+			total_price += iterator.price * iterator.quantity;
+		}
+	}
 
-methods.findTotalProducts = async function(){
-    // const details = await cartModel.findOne(
-    //     {user:this.user},
-    //     {products:1}
-    // )
-    var finalCount = this.products.length;
-    return finalCount;
-}
-
-// methods.findTotalPrice = async function(){
-//     // const details = await cartModel.findOne(
-//     //     {user:this.user},
-//     //     {products:1}
-//     // )
-//     var getPrice = ()=>{
-//         var price = 0
-//         this.products.forEach(element =>{
-//             price += element.price * element.quantity;
-//         })
-//         return price;
-//     }
-//     var totalPrice = getPrice();
-//     return totalPrice;
-// }
-
-const cartModel = model("Cart",cartSchema)
-export {cartModel};
+	return total_price;
+};
+const cartModel = model<cartInt, cartStatics>("Cart", cartSchema);
+export { cartModel, cartInt };

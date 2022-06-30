@@ -45,7 +45,7 @@ const addAddr = async (req: Request, res: Response, next: NextFunction) => {
 		var user = await userModel.findByEmail(email);
 		var addr = await addrModel.findOneAndUpdate(
 			{ user: user?._id },
-			{ $push: { address: address } }
+			{ $push: { address: address, $sort: { date: 1 } } }
 		);
 
 		res.status(200).json({

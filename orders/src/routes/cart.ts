@@ -1,53 +1,22 @@
-import express,{Request,Response,NextFunction}  from 'express';
-import { cartModel } from '../models/cart';
-import { productModel } from '../models/products';
-import { userModel } from '../models/users';
-
-
+import express from "express";
+import {
+	createCart,
+	addProduct,
+	removeProduct,
+	setProdQuantity,
+	deleteCart,
+	getCart,
+} from "../controllers/cart";
+import { auth_req } from "../middleware/auth";
 
 var router = express.Router();
 
-/* GET users listing. */
-router.get('/', (req:Request, res:Response, next:NextFunction)=>{
-  res.send('respond with a resource');
-});
+router.get("/", auth_req, getCart);
 
-router.post('/add',async (req:Request, res:Response, next:NextFunction)=>{
-  try {
+router.post("/add", auth_req, createCart);
+router.post("/addProduct", auth_req, addProduct);
+router.post("/removeProduct", auth_req, removeProduct);
+router.post("/addQuan", auth_req, setProdQuantity);
+router.post("/delCart", auth_req, deleteCart);
 
-    var data = req.body
-    // find the users in the system
-    const user = await userModel.findOne({
-      customerNumber:data.user
-    },{_id:1})
-    
-    if (user){
-      data.user = user._id
-    }
-
-    for (const key in data.products) {
-      const element = data.products[key];
-      
-      const product = await productModel.findOne({
-        productNumber:element.product
-      },{_id:1,price:1});
-      console.log(product)
-      element.product = product._id;
-      element.price = product.price;
-    }
- 
-    const cart = new cartModel(data);
-    await cart.save()
-
-
-    res.json(
-      {"success":true,"return":0}
-    )
-  } catch (error) {
-    console.log(error)
-    next(error)
-  }
-})
-
-router.post('')
-export {router as cartRouter};
+export { router as cartRouter };

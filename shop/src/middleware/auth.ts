@@ -54,7 +54,7 @@ const auth_req = async (req: Request, res: Response, next: NextFunction) => {
 			return next();
 		} else {
 			const url = process.env["AUTH_URL"] as string;
-			var user_data = fetch(`${url}/${token}`);
+			var user_data = await (await fetch(`${url}/${token}`)).json();
 			// check admin
 			var isadmin = true;
 			if (!isadmin) return next(auth_error);

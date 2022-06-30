@@ -41,6 +41,10 @@ const remove_cat = async (req: Request, res: Response, next: NextFunction) => {
 		success: deleted,
 	});
 };
-const edit_cat = async (req: Request, res: Response, next: NextFunction) => {};
+// this is the textual content of the categories in place
+const edit_cat = async (req: Request, res: Response, next: NextFunction) => {
+	const id = req.body.category_id;
+	const data = {};
+};
 
 export { add_cat, remove_cat, edit_cat, getCartegory };
