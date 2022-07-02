@@ -20,8 +20,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-app.use("/categories", categoriesRouter);
 app.use("/", productsRouter);
+app.use("/categories", categoriesRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req: Request, res: Response, next: NextFunction) {

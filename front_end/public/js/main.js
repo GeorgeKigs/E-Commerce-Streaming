@@ -91,9 +91,10 @@ const sign_up_function = async (event) => {
 		last_name: values["last_name"],
 		email: values["email"],
 		phoneNumber: values["phone_number"],
+		password: values["password"],
 	};
 
-	var new_account = values["customCheck2"];
+	// var new_account = values["customCheck2"];
 	var change_addr = values["customCheck3"];
 
 	let addr_data = {
@@ -104,11 +105,11 @@ const sign_up_function = async (event) => {
 	};
 	try {
 		// send the registration data to the db
-		if (new_account) {
+		if (true) {
 			reg_data["uuid"] = gen_uuid();
-
+			console.log(reg_data);
 			await registration(reg_data);
-			await user_address(addr_data);
+			// await user_address(addr_data);
 		} else if (change_addr) {
 			await user_address(addr_data);
 		}
@@ -118,7 +119,10 @@ const sign_up_function = async (event) => {
 };
 
 const registration = async (data) => {
-	var registration = await send_data("/users/registration", reg_data);
+	var registration = await send_data(
+		"http://localhost:5002/users/register",
+		data
+	);
 	if (registration["success"] == true) {
 		localStorage.setItem("phoneNumber", data["phoneNumber"]);
 		localStorage.setItem("uuid", registration["uuid"]);
@@ -142,7 +146,7 @@ const login_function = async (event) => {
 	delete values["rem_check"];
 
 	try {
-		const json = await send_data("http://localhost:5000/users/login", values);
+		const json = await send_data("http://localhost:5002/users/login", values);
 		console.log(json);
 		if (json["success"] == true) {
 			if (rem) {

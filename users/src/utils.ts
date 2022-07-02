@@ -2,14 +2,15 @@ import { Kafka, Consumer } from "kafkajs";
 import mongoose from "mongoose";
 import dotenv = require("dotenv");
 
-dotenv.config({ path: "./env" });
-
+dotenv.config({ path: "./.env" });
+console.log(process.env["MONGODB_URL"]);
 const connection = async () => {
 	const con_str = process.env["MONGODB_URL"];
 	if (con_str) {
 		await mongoose.connect(con_str);
+	} else {
+		throw Error("cannot connect without env variables");
 	}
-	throw Error("cannot connect without env variables");
 };
 
 const kafka = () => {

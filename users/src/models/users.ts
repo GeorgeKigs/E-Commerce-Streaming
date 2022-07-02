@@ -57,6 +57,7 @@ const user = new Schema<userInt, staticsInt>(
 			type: String,
 			trim: true,
 			lowercase: true,
+			required: true,
 		},
 		phoneNumber: {
 			type: Number,
@@ -96,10 +97,6 @@ let createError = (message: string): Error => {
 };
 
 user.pre("save", async function (next) {
-	if (!this.phoneNumber && !this.email) {
-		next(createError("input phoneNumber and/or email"));
-	}
-	// console.log(this.email,this.phoneNumber)
 	var user = await userModel.findOne({
 		$or: [
 			{
@@ -129,7 +126,7 @@ user.pre("save", async function (next) {
 user.pre("findOneAndUpdate", async function (next) {
 	//check if there is a password to prevent it from being updated
 	//@ts-ignore
-	if (this._update.password || this._update.email || this._update.phoneNumber) {
+	if (this._update.password || this._update.email) {
 		next(createError("Cannot update such personal details"));
 	}
 

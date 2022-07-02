@@ -66,12 +66,14 @@ const auth_not_req = async (
 	 * Middleware to make sure all the users are not yet authorized.
 	 */
 	try {
-		var header = req.headers["Authorization"];
-		if (!header || header != "") {
+		var header = req.headers["authorization"];
+		// console.log(header);
+		if (!header || header === "") {
 			console.log("headers do not exist");
 			return next();
 		}
 		// var host = req.headers["from"];
+
 		const token = header?.split(" ")[1];
 
 		const data = await verifyToken(token);
@@ -80,9 +82,11 @@ const auth_not_req = async (
 		}
 
 		var check = await checkUser(data);
-		if (!check) {
+		console.log(check);
+		if (check) {
 			return next();
 		}
+
 		return next(createHttpError("Unauthorised"));
 	} catch (error) {
 		return next(

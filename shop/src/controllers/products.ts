@@ -6,8 +6,8 @@ import createHttpError from "http-errors";
 const getProduct = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		var id = req.params.product_id;
-		const product = await productModel.findById(id);
-		if (product?.quantity == 0 || !product) {
+		const product = await productModel.findById(id).populate("category");
+		if (!product) {
 			res.status(200).json({
 				success: true,
 				data: null,

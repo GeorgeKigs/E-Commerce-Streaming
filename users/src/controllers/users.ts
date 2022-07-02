@@ -71,8 +71,11 @@ const registration = async (
 			email: req.body.email,
 			customerNumber: req.body.uuid,
 			password: req.body.password,
+			phoneNumber: parseInt(req.body.phoneNumber),
 		};
+		console.log(data);
 		// data["ip"] = req.ip;
+
 		var user = new userModel(data);
 		await user.save();
 
@@ -87,6 +90,7 @@ const registration = async (
 			message: "registration was successful",
 		});
 	} catch (error) {
+		console.log(error);
 		next(createHttpError("cannot register the customer"));
 	}
 };
@@ -94,6 +98,7 @@ const update_pass = async (req: Request, res: Response, next: NextFunction) => {
 	var password: string = req.body.password;
 	var c_password: string = req.body.c_password;
 	var email: string = req.body.email;
+
 	if (password === c_password) {
 		var changed = await userModel.updatePassword(email, password);
 		if (changed) {

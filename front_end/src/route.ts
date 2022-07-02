@@ -6,6 +6,12 @@ const router = express.Router();
 router.get("/", (req: Request, res: Response) => {
 	res.render("index");
 });
+router.get("/index", (req: Request, res: Response) => {
+	res.render("index");
+});
+router.get("/home", (req: Request, res: Response) => {
+	res.render("index");
+});
 router.get("/login", (req: Request, res: Response) => {
 	res.render("login");
 });
@@ -28,7 +34,7 @@ router.get("/getUUID", (req: Request, res: Response) => {
 	});
 });
 router.get("/product-details", (req: Request, res: Response) => {
-	res.render("shop");
+	res.render("product-details");
 });
 
 export { router as getRoutes };
