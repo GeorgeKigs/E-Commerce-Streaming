@@ -37,26 +37,37 @@ const validateUser = async (
 };
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
-	const identifier = req.body.email;
-	const password = req.body.password;
+	try {
+		const identifier = req.body.email;
+		const password = req.body.password;
 
-	const authenticated = await userModel.authenticate(identifier, password);
-	if (authenticated) {
-		var data = await userModel.findByEmail(identifier);
+		const authenticated = await userModel.authenticate(identifier, password);
+		if (authenticated) {
+			var data = await userModel.findByEmail(identifier);
 
-		const token = generateToken(data);
+			data = {
+				_id: data?.id,
+				customerNumber: data?.customerNumber,
+				firstName: data?.firstName,
+				lastName: data?.lastName,
+				email: data?.email,
+				phoneNumber: data?.phoneNumber,
+			};
+			console.log(data);
 
-		res.status(200).json({
-			success: true,
-			token: token,
-			uuid: data?.get("customerNumber"),
-			message: "login was successful",
-		});
-	} else {
-		res.status(403).json({
-			success: false,
-			message: "Unauthorised",
-		});
+			const token = generateToken(data);
+
+			res.status(200).json({
+				success: true,
+				token: token,
+				uuid: data["customerNumber"],
+				message: "login was successful",
+			});
+		} else {
+			next(Error("Unauthorized"));
+		}
+	} catch (error) {
+		next(error);
 	}
 };
 const registration = async (
@@ -70,8 +81,8 @@ const registration = async (
 			lastName: req.body.lastName,
 			email: req.body.email,
 			customerNumber: req.body.uuid,
+			phoneNumber: req.body.phoneNumber,
 			password: req.body.password,
-			phoneNumber: parseInt(req.body.phoneNumber),
 		};
 		console.log(data);
 		// data["ip"] = req.ip;
@@ -80,6 +91,8 @@ const registration = async (
 		await user.save();
 
 		delete data["password"];
+		data["_id"] = user.id;
+
 		var token = generateToken(data);
 		console.log(data);
 
@@ -128,6 +141,7 @@ const update_user = async (req: Request, res: Response, next: NextFunction) => {
 		});
 	}
 	res.status(403).json({
+		success: false,
 		message: "error",
 	});
 };

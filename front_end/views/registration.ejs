@@ -54,8 +54,8 @@
 			<!-- Mobile Nav (max width 767px)-->
 			<div class="mobile-nav">
 				<!-- Navbar Brand -->
-				<div class="TAUSI-navbar-brand">
-					<a href="index">
+				<div class="amado-navbar-brand">
+					<a href="index.html">
 						<h2
 							style="font-weight: bold; letter-spacing: 2px; padding: 2em 0em"
 						>
@@ -101,6 +101,7 @@
 					<a href="#" class="btn amado-btn mb-15">%Discount%</a>
 					<a href="#" class="btn amado-btn active">New this week</a>
 				</div>
+				<!-- Cart Menu -->
 			</header>
 			<!-- Header Area End -->
 			<div class="cart-table-area section-padding-100">
@@ -109,66 +110,86 @@
 						<div class="col-12 col-lg-8">
 							<div class="checkout_details_area mt-50 clearfix">
 								<div class="cart-title">
-									<h2>Login</h2>
+									<h2>Registration</h2>
 								</div>
-								<form id="login_form">
-									<!-- <img class="mb-4" src="/docs/5.2/assets/brand/bootstrap-logo.svg" alt="" width="72" height="57"> -->
 
-									<div class="form-floating">
-										<div class="col-md-12 mb-3">
-											<label for="email">Email address</label>
+								<form action="#" method="post" id="registration_form">
+									<div class="row">
+										<div class="col-md-6 mb-3">
+											<input
+												type="text"
+												class="form-control"
+												id="first_name"
+												value=""
+												placeholder="First Name"
+												required
+											/>
+										</div>
+										<div class="col-md-6 mb-3">
+											<input
+												type="text"
+												class="form-control"
+												id="last_name"
+												value=""
+												placeholder="Last Name"
+												required
+											/>
+										</div>
+										<div class="col-md-6 mb-3">
 											<input
 												type="email"
 												class="form-control"
 												id="email"
-												placeholder="name@example.com"
-												required
+												placeholder="Email"
+												value=""
 											/>
 										</div>
-									</div>
-									<div class="form-floating">
-										<div class="col-md-12 mb-3">
-											<label for="password">Password</label>
+										<div class="col-md-6 mb-3">
+											<input
+												type="number"
+												class="form-control"
+												id="phone_number"
+												min="0"
+												placeholder="Phone Number"
+												value=""
+											/>
+										</div>
+										<div class="col-md-6 mb-3">
 											<input
 												type="password"
 												class="form-control"
 												id="password"
 												placeholder="Password"
-												required
+												value=""
+											/>
+										</div>
+										<div class="col-md-6 mb-3">
+											<input
+												type="password"
+												class="form-control"
+												id="c_password"
+												placeholder="Confirm Password"
+												value=""
 											/>
 										</div>
 									</div>
-
-									<div class="checkbox mb-3">
-										<label>
-											<input
-												type="checkbox"
-												id="rem_check"
-												value="remember-me"
-											/>
-											Remember me
-										</label>
-									</div>
-
 									<div class="col-md-12 mb-3">
 										<button
-											id="login_sub_btn"
-											class="btn amado-btn w-50 justify-content-center"
 											type="submit"
+											class="btn amado-btn w-50 justify-content-center"
+											id="registration_btn"
 										>
-											Sign in
+											Register
 										</button>
 									</div>
-									<hr />
-									Don't have account ?
-									<a href="registration" class="btn"> Sign Up </a>
-									<hr />
 								</form>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
+
+			<!-- ##### Main Content Wrapper End ##### -->
 
 			<!--prettier-ignore-->
 		</div>

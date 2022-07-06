@@ -39,6 +39,13 @@ services:
       - "5002:5002"
     container_name: users
 
+  mongo:
+    image: mongo
+    container_name: mongo_db
+    # ports:
+    #   - "27017:27017"
+    # restart: always
+
   nginx:
     image: nginx:latest 
     container_name: nginx

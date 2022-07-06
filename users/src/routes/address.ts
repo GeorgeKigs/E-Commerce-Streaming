@@ -6,12 +6,13 @@ import {
 	getAddr,
 	createAddr,
 } from "../controllers/address";
+import { auth_req } from "../middleware/auth";
 const router = express.Router();
 
-router.get("/", getAddr);
-router.post("/addAddress", addAddr);
-router.post("/deleteAddress", delAddr);
-router.post("/patchAddress",patchAddr)
-router.post("/createAddress",createAddr)
+router.get("/", auth_req, getAddr);
+router.post("/addAddress", auth_req, addAddr);
+router.post("/deleteAddress", auth_req, delAddr);
+router.post("/patchAddress", auth_req, patchAddr);
+router.post("/createAddress", auth_req, createAddr);
 
 export { router as addr_router };

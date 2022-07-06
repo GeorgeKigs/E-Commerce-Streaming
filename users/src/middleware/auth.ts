@@ -4,28 +4,29 @@
  */
 
 import { Request, Response, NextFunction } from "express";
-import { returnInt, userModel } from "../models/users";
+import { userModel } from "../models/users";
 import createHttpError from "http-errors";
 import dotenv from "dotenv";
 import { verifyToken } from "../models/misc";
-
-import { kafka_client } from "../utils";
 
 dotenv.config({ path: "../../env" });
 
 async function checkUser(data: any): Promise<boolean> {
 	var email: string = data.email;
 	var check = await userModel.findByEmail(email);
+	console.log(check);
 	return typeof check == null;
 }
 
 const getData = async (token: string): Promise<boolean | any> => {
 	const data: any = await verifyToken(token);
+	console.log(data);
 	if (!data) {
 		return false;
 	}
 	var check = await checkUser(data);
-	if (!check) {
+	console.log(check);
+	if (check) {
 		return false;
 	}
 	return data;
@@ -37,7 +38,8 @@ const auth_req = async (req: Request, res: Response, next: NextFunction) => {
 	 * Makes sure all the users are authorizrd to make the request
 	 */
 	try {
-		var header = req.headers["Authorization"];
+		var header = req.headers["authorization"];
+		console.log(req.headers);
 		if (!header) {
 			return next("Unauthorised");
 		}
@@ -49,12 +51,16 @@ const auth_req = async (req: Request, res: Response, next: NextFunction) => {
 			return next("token is unauthorized");
 		}
 		const data = await getData(token);
+		console.log(data);
 		if (data) {
+			console.log(data);
+			req.body.data = data;
 			req.body.user_id = data._id;
 		}
 		return next();
 	} catch (error) {
-		return next(error);
+		console.log(error);
+		return next(Error("Check the headers"));
 	}
 };
 const auth_not_req = async (
@@ -67,7 +73,6 @@ const auth_not_req = async (
 	 */
 	try {
 		var header = req.headers["authorization"];
-		// console.log(header);
 		if (!header || header === "") {
 			console.log("headers do not exist");
 			return next();
@@ -89,9 +94,14 @@ const auth_not_req = async (
 
 		return next(createHttpError("Unauthorised"));
 	} catch (error) {
-		return next(
-			createHttpError("error while handling the authentication not required.")
-		);
+		let message = error as any;
+		if (message.message == "jwt expired") {
+			return next();
+		} else {
+			return next(
+				createHttpError("error while handling the authentication not required.")
+			);
+		}
 	}
 };
 

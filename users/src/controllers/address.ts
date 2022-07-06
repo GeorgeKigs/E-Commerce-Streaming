@@ -1,10 +1,10 @@
 import addrModel from "../models/address";
 import { Request, Response, NextFunction } from "express";
 import { userModel } from "../models/users";
-
+import mongoose from "mongoose";
 const createAddr = async (req: Request, res: Response, next: NextFunction) => {
 	try {
-		var email = req.body.email;
+		var email = req.body.data.email;
 		var user = await userModel.findByEmail(email);
 		if (user) {
 			var data = {
@@ -13,6 +13,7 @@ const createAddr = async (req: Request, res: Response, next: NextFunction) => {
 					street: req.body.street,
 					zipcode: req.body.zipcode,
 					city: req.body.city,
+					phoneNumber: req.body.phone_number,
 				},
 			};
 			await addrModel.create(data);
@@ -36,16 +37,19 @@ const createAddr = async (req: Request, res: Response, next: NextFunction) => {
 
 const addAddr = async (req: Request, res: Response, next: NextFunction) => {
 	try {
-		var email = req.body.email;
+		var email = req.body.data.email;
+		console.log(req.body.data);
 		const address = {
 			street: req.body.street,
 			zipcode: req.body.zipcode,
 			city: req.body.city,
+			phoneNumber: req.body.phone_number,
 		};
 		var user = await userModel.findByEmail(email);
 		var addr = await addrModel.findOneAndUpdate(
 			{ user: user?._id },
-			{ $push: { address: address, $sort: { date: 1 } } }
+			{ $push: { address: address, $sort: { date: 1 } } },
+			{ new: true, sort: { "address.date": 1 } }
 		);
 
 		res.status(200).json({
@@ -73,7 +77,18 @@ const delAddr = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const getAddr = async (req: Request, res: Response, next: NextFunction) => {
-	var user_id = req.body._id;
+	try {
+		var user_id = new mongoose.Types.ObjectId(req.body.data._id);
+		var data = await addrModel.findOne({ user: user_id });
+		data?.address.reverse();
+		console.log(data);
+		res.status(200).json({
+			success: true,
+			data,
+		});
+	} catch (error) {
+		next(error);
+	}
 };
 
 export { addAddr, patchAddr, delAddr, getAddr, createAddr };

@@ -1,9 +1,53 @@
+import { get_user_token, get_form_data, get_data } from "./main.js";
 var page = window.location.href.split("/")[3];
 
-const getCategories = async () => {
-	// categoryName:
-	// description:
-	// categoryPics: [location]
+async function get_cart() {
+	let cart = {
+		products: [],
+	};
+	let local_cart = JSON.parse(localStorage.getItem("cart"));
+	if (!local_cart) {
+		let token = get_user_token(); // defined in the main db
+		if (token) {
+			local_cart = await get_data("/orders/cart");
+			localStorage.setItem("cart", JSON.stringify(local_cart));
+		} else {
+			local_cart = cart;
+		}
+	}
+
+	return local_cart;
+}
+
+async function headers(heading) {
+	// set the active link
+	const link = document.getElementById(`${heading}_li`);
+	link.setAttribute("class", "active");
+
+	// set the number of goods in the cart
+	let cart = await get_cart();
+	let len = cart.products.length;
+	const cart_nav = document.getElementsByClassName("cart-nav").item(0);
+	let span = cart_nav.getElementsByTagName("span").item(0);
+	span.innerText = `(${len})`;
+
+	// set the function for wish_list
+}
+
+async function getCategories() {
+	let price = parseInt(Math.random() * 1000);
+	const data = [
+		{
+			categoryName: "new_name",
+			description: "Works pretty well",
+			categoryPics: [{ location: "img/bg-img/1.jpg" }],
+		},
+		{
+			categoryName: "new_name_2",
+			description: "Works pretty well,again",
+			categoryPics: [{ location: "img/bg-img/2.jpg" }],
+		},
+	];
 
 	// const data = await (
 	// 	await fetch("http://localhost:5000/products/categories")
@@ -14,20 +58,21 @@ const getCategories = async () => {
 		const element = divs[div];
 		let image = element.getElementsByTagName("img")[0];
 		let name = element.getElementsByClassName("prod_name")[0];
-		let price = element.getElementsByClassName("price")[0];
-		price.innerHTML = "price";
-		name.innerHTML = "name";
-		// image.setAttribute("src", "img/bg-img/1.jpg");
+		let price_element = element.getElementsByClassName("price")[0];
+		try {
+			price_element.innerHTML = `From Ksh: ${price}`;
+			name.innerHTML = data[div]["categoryName"];
+			image.setAttribute("src", data[0]["categoryPics"][0]["location"]);
+		} catch (error) {
+			break;
+		}
 	}
-};
+}
 
-const getProducts = async () => {
+async function getProducts() {
 	// get the metadata
-
 	// get 5 categories being used
-	// const category_data = await (
-	// 	await fetch("http://localhost:5000/products/categories")
-	// ).json();
+	// const category_data = await get_data("/products/categories")
 
 	let category_class = document
 		.getElementsByClassName("catagories-menu")
@@ -35,6 +80,7 @@ const getProducts = async () => {
 
 	let list = category_class.getElementsByTagName("ul").item(0);
 	let prds = [1, 2, 3, 4];
+
 	// initial category
 	let category = document.createElement("li");
 	let link = document.createElement("a");
@@ -43,6 +89,7 @@ const getProducts = async () => {
 	category.appendChild(link);
 	category.setAttribute("class", "active");
 	list.appendChild(category);
+
 	// then add the rest
 	prds.slice(1).forEach((element) => {
 		let category = document.createElement("li");
@@ -65,22 +112,18 @@ const getProducts = async () => {
 	slider.setAttribute("data-max", prices[1]);
 
 	const tags = "";
-};
+}
 
-const set_products_page = async (link) => {
-	const products = await (await fetch()).json();
+async function set_products_page(link) {
+	// const products = await (await fetch()).json();
 
 	// sorting:
 	// make a get request with the filters in place
 	// as well as the sorting parameters
-
 	// number of products: slice the number of products
-
 	// images
-
 	// pagination: set the page in the get request to get
 	//the next round of images
-
 	// product:
 	// rating & cart
 	let place_holder = "place_holder";
@@ -133,9 +176,9 @@ const set_products_page = async (link) => {
 			// rating_class.appendChild(rate)
 		}
 	});
-};
+}
 
-const getSingleProduct = async () => {
+async function getSingleProduct() {
 	//     productNumber:,
 	//     productName:
 	//     category:
@@ -146,11 +189,10 @@ const getSingleProduct = async () => {
 	//     productPic: [location],
 	//     quantity:,
 	// }
-
 	const product_id = window.location.href.split("/")[4];
-	const data = await (
-		await fetch(`http://localhost:5000/product/productId/${product_id}`)
-	).json();
+	// const data = await (
+	// 	await fetch(`http://localhost:5000/product/productId/${product_id}`)
+	// ).json();
 
 	//set the name of the product
 	let product_name = Array.from(
@@ -171,7 +213,6 @@ const getSingleProduct = async () => {
 		document.getElementById("add_cart").removeAttribute("disabled");
 	}
 	// console.log("single product");
-
 	// set the description
 	document.getElementById("description").innerHTML = "new description";
 
@@ -179,8 +220,8 @@ const getSingleProduct = async () => {
 	let category = document.getElementById("category");
 	category.innerHTML = "category";
 	category.setAttribute("href", "1445");
-};
-const getCart = async () => {
+}
+async function getCart() {
 	console.log("cart");
 	//     user:
 	//     products: [
@@ -191,19 +232,15 @@ const getCart = async () => {
 	//             quantity,
 	//         },
 	//     ]
-	const cart = await (
-		await fetch("http://localhost:5000/orders/cart", {
-			headers: { authorization: localStorage.getItem("authorization") },
-		})
-	).json();
+	let cart = get_cart();
 	const products = Array.from(cart.products);
 	calculate_total(products);
 	let t_body = document.getElementsByTagName("tbody").item(0);
 
 	products.forEach(async (product) => {
-		let prod = await (
-			await fetch(`http://localhost:5000/product/productId/${product.product}`)
-		).json();
+		// let prod = await (
+		// 	await fetch(`http://localhost:5000/product/productId/${product.product}`)
+		// ).json();
 		let html = `
 			<td class="cart_product_img">
 				<!-- link to the product details -->
@@ -247,37 +284,42 @@ const getCart = async () => {
 	});
 
 	// set the image
-};
+}
 
-const qty_minus = (event) => {
+function qty_minus(event) {
 	// <span class="qty-minus" onclick="var effect = document.getElementById('qty'); var qty = effect.value; if( !isNaN( qty ) &amp;&amp; qty &gt; 1 ) effect.value--;return false;"><i class="fa fa-minus" aria-hidden="true"></i></span>
 	// <input type="number" class="qty-text" id="qty" step="1" min="1" max="300" name="quantity" value="1">
 	// <span class="qty-plus" onclick="var effect = document.getElementById('qty'); var qty = effect.value; if( !isNaN( qty )) effect.value++;return false;"><i class="fa fa-plus" aria-hidden="true"></i></span>
-};
+}
 
-const qty_plus = (event) => {
+function qty_plus(event) {
 	// <span class="qty-minus" onclick="var effect = document.getElementById('qty'); var qty = effect.value; if( !isNaN( qty ) &amp;&amp; qty &gt; 1 ) effect.value--;return false;"><i class="fa fa-minus" aria-hidden="true"></i></span>
 	// <input type="number" class="qty-text" id="qty" step="1" min="1" max="300" name="quantity" value="1">
 	// <span class="qty-plus" onclick="var effect = document.getElementById('qty'); var qty = effect.value; if( !isNaN( qty )) effect.value++;return false;"><i class="fa fa-plus" aria-hidden="true"></i></span>
-};
+}
 
-const calculate_total = (products) => {
+function calculate_total(products) {
 	// calculate the total price of the products
 	let sum = 0;
 	let delivery_fee = 0;
-	products.forEach((product) => {
-		sum += product.price * product.quantity;
-	});
-	document.getElementById("cart_price").innerText = sum;
-	document.getElementById("delivery_price").innerText = delivery_fee;
-	document.getElementById("total_price").innerText = sum + delivery_fee;
-};
+	// products.forEach((product) => {
+	// 	sum += product.price * product.quantity;
+	// });
+	let cart = document.getElementById("cart_price");
+	cart.innerHTML = sum;
+	document.getElementById("delivery_price").innerHTML = delivery_fee;
+	document.getElementById("total_price").innerHTML = sum + delivery_fee;
+}
 
-const PAGES = {
-	index: getCategories,
-	"product-details": getSingleProduct,
-	shop: getProducts,
-	cart: getCart,
-};
-
-PAGES[page]();
+headers(page);
+try {
+	let PAGES = {
+		index: getCategories,
+		"product-details": getSingleProduct,
+		shop: getProducts,
+		cart: getCart,
+	};
+	PAGES[page]();
+} catch {
+	console.log("Page is not defined in the pages used");
+}

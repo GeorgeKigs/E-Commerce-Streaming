@@ -25,7 +25,7 @@ interface userInt extends returnInt {
 	};
 }
 interface staticsInt extends Model<userInt> {
-	findByEmail(email: string): Promise<Document<returnInt> | null>;
+	findByEmail(email: string): Promise<any | null>;
 	findByPhoneNumber(phoneNumber: number): Promise<Document<returnInt> | null>;
 	deleteUser(identifier: string | number): Promise<boolean>;
 	updatePassword(email: string, password: string): Promise<boolean>;
@@ -250,15 +250,13 @@ statics.findByPhoneNumber = async function (
 	return details;
 };
 
-statics.findByEmail = async function (
-	email: string
-): Promise<returnInt | null> {
+statics.findByEmail = async function (email: string): Promise<any | null> {
 	email = email.toLowerCase();
 	var details: returnInt | null = await userModel
 		.findOne({
 			email,
 		})
-		.select("firstName lastName email phoneNumber registered customerNumber");
+		.select("firstName lastName email phoneNumber customerNumber id");
 	return details;
 };
 

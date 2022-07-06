@@ -23,14 +23,17 @@ const gen_uuid = async () => {
 	return id;
 };
 
-const get_user_token = () => {
-	var token = sessionStorage.getItem("Authorization");
+function get_user_token() {
+	var token = sessionStorage.getItem("authorization");
+	console.log(token);
 	if (!token) {
-		var token = localStorage.getItem("Authorization");
+		var token = localStorage.getItem("authorization");
+		console.log(token);
 	}
 	return token;
-};
+}
 
+// todo: check how to incoperate new input functions such as radio buttons
 const get_form_data = (input_id) => {
 	let input_data = {};
 	let form = document.getElementById(input_id);
@@ -40,6 +43,30 @@ const get_form_data = (input_id) => {
 	});
 	return input_data;
 };
+
+async function get_data(url) {
+	let token = get_user_token();
+	let data = null;
+	try {
+		// handle the errors that may occur
+		data = await fetch(`http://localhost:5000${url}`, {
+			headers: { authorization: token },
+		}).json();
+		if (data["success"]) {
+			return data;
+		} else {
+			if (data.message == "Unauthorized") {
+				window.location.href = "login";
+			} else {
+				return data;
+			}
+		}
+		// return the errors to enable the user to use different actions
+	} catch (error) {
+		console.log(error);
+		alert("Try again later");
+	}
+}
 
 const send_data = async (url, data) => {
 	try {
@@ -51,12 +78,15 @@ const send_data = async (url, data) => {
 		if (token) {
 			headers["Authorization"] = token;
 		}
-		var registration = await fetch(url, {
+		var registration = await fetch(`http://localhost:5000/${url}`, {
 			method: "post",
 			body: JSON.stringify(data),
 			headers,
 		});
 		const json = await registration.json();
+		if (json.message == "Unauthorized") {
+			window.location.href = "login";
+		}
 		return json;
 	} catch (error) {
 		console.error(error);
@@ -67,8 +97,8 @@ const logout_function = async (event) => {
 	event.preventDefault();
 	var data = await send_data("/users/logout", {});
 	if (data["success"] == true) {
-		localStorage.removeItem("Authorization");
-		sessionStorage.removeItem("Authorization");
+		localStorage.removeItem("authorization");
+		sessionStorage.removeItem("authorization");
 	} else {
 		handleErrors(data["message"]);
 	}
@@ -77,59 +107,147 @@ const logout_function = async (event) => {
 const checkout_function = async (event) => {
 	// ? check how to use radio buttons
 	event.preventDefault();
+	let values = get_form_data("registration_form");
 	// if its it cash on delivery push the cart data to the orders
 	// if its mpesa/paypal come up with a payment page for both Mpesa and paypal
 };
+
+const registration = async (data) => {
+	console.log(data);
+	try {
+		var registration = await send_data("users/register", data);
+		if (registration["success"] == true) {
+			localStorage.setItem("phoneNumber", data["phoneNumber"]);
+			localStorage.setItem("uuid", registration["uuid"]);
+			localStorage.setItem("authorization", registration["token"]);
+			sessionStorage.setItem("authorization", registration["token"]);
+		} else {
+			handleErrors(registration["message"]);
+		}
+	} catch (error) {
+		console.log(error);
+		alert("Cannot proceed with registration.");
+	}
+};
+
+async function setAddress() {
+	var data = {
+		success: true,
+		message: "Address was added",
+		data: {
+			_id: "62c5dcd523b2e452ccb601eb",
+			user: "62c54675582f5b0886c95f7f",
+			address: [
+				{
+					street: "Kikuyu",
+					zipcode: "Kinoo",
+					city: "Kiambu",
+					phoneNumber: 710112916,
+					date: "2022-07-06T18:33:02.150Z",
+					_id: "62c5dce123b2e452ccb601f0",
+				},
+				{
+					street: "Kikuyu",
+					zipcode: "Death Valley",
+					city: "Kiambu",
+					phoneNumber: 710112916,
+					date: "2022-07-06T18:33:02.150Z",
+					_id: "62c5dce123b2e452ccb0",
+				},
+			],
+			createdAt: "2022-07-06T19:04:53.496Z",
+			updatedAt: "2022-07-06T19:05:05.794Z",
+			__v: 0,
+		},
+	};
+	// var data = await get_data("users/address");
+	if (data) {
+		let addresses = data.data.address;
+		// get the t-body
+		let t_body = document.getElementById("address_table");
+		addresses.forEach((element) => {
+			let tr = document.createElement("tr");
+			tr.innerHTML = `
+			<td class="qty">
+				<div class="qty-btn d-flex">
+					<input type="radio" name="address" value="${element._id}"/>
+				</div>
+			</td>
+			<td class="cart_product_img">
+				<p>${element.street}</p>
+			</td>
+			<td class="cart_product_desc">
+				<h5>${element.zipcode}</h5>
+			</td>
+			<td class="price">
+				<span>${element.phoneNumber}</span>
+			</td>
+		`;
+			t_body.appendChild(tr);
+		});
+	}
+}
+
+async function address_func(event) {
+	event.preventDefault();
+
+	let values = get_form_data("address_form");
+	console.log(values);
+
+	let addr_data = {
+		street: values["street_address"],
+		city: values.city,
+		zipcode: values.zipCode,
+	};
+	// check for the addresses
+	let addr = document.getElementById("address_table").hasChildNodes();
+
+	try {
+		// if (addr) {
+		// 	await send_data("/users/address/createAddress", addr_data);
+		// } else {
+		// 	await send_data("/users/address/addAddress", addr_data);
+		// }
+		setAddress();
+	} catch (error) {
+		alert("We could not send the data.");
+	}
+}
 
 const sign_up_function = async (event) => {
 	event.preventDefault();
 
 	let values = get_form_data("registration_form");
-
+	// check if passwords are equal
+	if (values["password"] !== values["c_password"]) {
+		alert("Passwords should be equal to each other.");
+		return;
+	}
+	// check if the user is registered
+	let token = get_user_token();
+	console.log(token);
+	if (token) {
+		alert("User should login.");
+		return;
+	}
+	// get the data
 	let reg_data = {
-		first_name: values["first_name"],
-		last_name: values["last_name"],
+		firstName: values["first_name"],
+		lastName: values["last_name"],
 		email: values["email"],
 		phoneNumber: values["phone_number"],
 		password: values["password"],
 	};
 
-	// var new_account = values["customCheck2"];
-	var change_addr = values["customCheck3"];
-
-	let addr_data = {
-		email: values.email,
-		street: values["street_address"],
-		city: values.city,
-		zipcode: values.zipCode,
-	};
 	try {
 		// send the registration data to the db
-		if (true) {
-			reg_data["uuid"] = gen_uuid();
-			console.log(reg_data);
-			await registration(reg_data);
-			// await user_address(addr_data);
-		} else if (change_addr) {
-			await user_address(addr_data);
-		}
+		reg_data["uuid"] = await gen_uuid();
+
+		console.log(reg_data);
+		await registration(reg_data);
 	} catch (error) {
 		console.error(error);
-	}
-};
-
-const registration = async (data) => {
-	var registration = await send_data(
-		"http://localhost:5002/users/register",
-		data
-	);
-	if (registration["success"] == true) {
-		localStorage.setItem("phoneNumber", data["phoneNumber"]);
-		localStorage.setItem("uuid", registration["uuid"]);
-		localStorage.setItem("authorzation", registration["token"]);
-		sessionStorage.setItem("Authorization", registration["token"]);
-	} else {
-		handleErrors(registration["message"]);
+		alert("Cannot register the user");
 	}
 };
 
@@ -146,7 +264,7 @@ const login_function = async (event) => {
 	delete values["rem_check"];
 
 	try {
-		const json = await send_data("http://localhost:5002/users/login", values);
+		const json = await send_data("users/login", values);
 		console.log(json);
 		if (json["success"] == true) {
 			if (rem) {
@@ -162,28 +280,32 @@ const login_function = async (event) => {
 	}
 };
 
-const user_address = async (data) => {
-	var addr_dets = await send_data("/users/address/new", addr_data);
-};
-
-const handleErrors = (message) => {
-	console.log(data);
-};
-
 window.onload = () => {
-	console.log("here");
 	gen_uuid();
 };
 
 let login_submit_btn = document.getElementById("login_form");
 let registration_btn = document.getElementById("registration_btn");
-let checkout_btn = document.getElementById("checkout_btn");
+let address_btn = document.getElementById("address_form");
+let checkout_btn = document.getElementById("checkout_form");
 
 if (login_submit_btn) {
 	login_submit_btn.addEventListener("submit", login_function);
 }
+if (address_btn) {
+	// set the default phone number
+	document
+		.getElementById("phone_number")
+		.setAttribute("value", localStorage.getItem("phoneNumber"));
 
+	address_btn.addEventListener("submit", address_func);
+}
+if (checkout_btn) {
+	checkout_btn.addEventListener("submit", checkout_function);
+	setAddress();
+}
 if (registration_btn) {
 	registration_btn.addEventListener("click", sign_up_function);
-	checkout_btn.addEventListener("submit", checkout_function);
 }
+
+export { get_form_data, get_user_token, send_data, get_data };

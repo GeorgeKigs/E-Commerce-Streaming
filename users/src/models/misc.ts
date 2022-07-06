@@ -38,7 +38,7 @@ export function generateToken(data: any): string {
 	var secretKey = "This is True";
 	var data = data;
 	var token = jsonwebtoken.sign(data, secretKey, {
-		expiresIn: "1800s",
+		expiresIn: "180000s",
 	});
 	return token;
 }

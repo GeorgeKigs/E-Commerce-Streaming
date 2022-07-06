@@ -5,6 +5,7 @@ interface addrInt {
 	address: Types.Array<{
 		street: string;
 		zipcode: String;
+		phoneNumber: Number;
 		city: String;
 		date: Date;
 	}>;
@@ -27,6 +28,9 @@ const addrSchema = new Schema<addrInt, Model<addrInt>>(
 				},
 				city: {
 					type: String,
+				},
+				phoneNumber: {
+					type: Number,
 				},
 				date: {
 					type: Date,
