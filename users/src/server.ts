@@ -6,7 +6,7 @@ import path from "path";
 import cookieParser from "cookie-parser";
 import { usersRouter } from "./routes/users";
 import cors from "cors";
-import { connection } from "./utils";
+import { connection } from "./configs/utils";
 
 var app = express();
 

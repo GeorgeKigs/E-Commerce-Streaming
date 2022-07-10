@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { generateToken } from "../models/misc";
 import createHttpError from "http-errors";
-import { userModel, returnInt } from "../models/users";
+import { userModel } from "../models/users";
 import { getData } from "../middleware/auth";
 
 const getUser = async (req: Request, res: Response, next: NextFunction) => {

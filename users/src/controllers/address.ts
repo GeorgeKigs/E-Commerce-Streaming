@@ -2,38 +2,6 @@ import addrModel from "../models/address";
 import { Request, Response, NextFunction } from "express";
 import { userModel } from "../models/users";
 import mongoose from "mongoose";
-const createAddr = async (req: Request, res: Response, next: NextFunction) => {
-	try {
-		var email = req.body.data.email;
-		var user = await userModel.findByEmail(email);
-		if (user) {
-			var data = {
-				user: user._id,
-				address: {
-					street: req.body.street,
-					zipcode: req.body.zipcode,
-					city: req.body.city,
-					phoneNumber: req.body.phone_number,
-				},
-			};
-			await addrModel.create(data);
-			res.status(200).json({
-				success: true,
-				message: "Address was added",
-			});
-		} else {
-			res.status(403).json({
-				success: false,
-				message: "user does not exist",
-			});
-		}
-	} catch (error) {
-		res.status(500).json({
-			success: false,
-			message: "Could not add data",
-		});
-	}
-};
 
 const addAddr = async (req: Request, res: Response, next: NextFunction) => {
 	try {
@@ -49,7 +17,12 @@ const addAddr = async (req: Request, res: Response, next: NextFunction) => {
 		var addr = await addrModel.findOneAndUpdate(
 			{ user: user?._id },
 			{ $push: { address: address, $sort: { date: 1 } } },
-			{ new: true, sort: { "address.date": 1 } }
+			{
+				new: true,
+				sort: { "address.date": 1 },
+				upsert: true,
+				setDefaultsOnInsert: true,
+			}
 		);
 
 		res.status(200).json({
@@ -91,4 +64,4 @@ const getAddr = async (req: Request, res: Response, next: NextFunction) => {
 	}
 };
 
-export { addAddr, patchAddr, delAddr, getAddr, createAddr };
+export { addAddr, patchAddr, delAddr, getAddr };

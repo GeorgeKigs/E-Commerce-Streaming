@@ -12,7 +12,7 @@ const getCartegory = async (
 			.find({ "deleted.status": false })
 			.select("-deleted")
 			.limit(10);
-		res.status(100).json({
+		res.status(200).json({
 			success: true,
 			data: data,
 		});
@@ -22,13 +22,20 @@ const getCartegory = async (
 };
 const add_cat = async (req: Request, res: Response, next: NextFunction) => {
 	try {
-		let category = req.body;
-		// console.log(category)
-		let data = new catergoryModel(category);
-		// let data = new
-		await data.save();
+		let pics = [] as any[];
+		req.body.pics.forEach((element: string) => {
+			pics.push({ location: element });
+		});
+		let category = {
+			categoryName: req.body.categoryName,
+			description: req.body.description,
+			categoryPics: pics,
+		};
+		console.log(category);
 
-		res.json({ success: true, return: 0 });
+		let data = await catergoryModel.create(category);
+
+		res.json({ success: true, return: data });
 	} catch (error) {
 		next(error);
 	}

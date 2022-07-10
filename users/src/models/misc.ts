@@ -3,7 +3,7 @@ import nodemailer from "nodemailer";
 import os from "node:os";
 import jsonwebtoken from "jsonwebtoken";
 import crypto from "crypto";
-import { returnInt } from "./users";
+import configs from "../configs/configs";
 
 interface mailInter {
 	code: string;
@@ -35,7 +35,7 @@ export async function sendMail(mail: mailInter) {
 	});
 }
 export function generateToken(data: any): string {
-	var secretKey = "This is True";
+	var secretKey = configs.jwt_secret as string;
 	var data = data;
 	var token = jsonwebtoken.sign(data, secretKey, {
 		expiresIn: "180000s",
@@ -44,7 +44,7 @@ export function generateToken(data: any): string {
 }
 
 export async function verifyToken(token: string) {
-	var secretKey = "This is True";
+	var secretKey = configs.jwt_secret as string;
 	try {
 		var data = jsonwebtoken.verify(token, secretKey);
 		return data;

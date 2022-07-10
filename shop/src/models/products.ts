@@ -41,7 +41,7 @@ const productSchema = new Schema<Prods, productStatics>(
 		},
 		category: {
 			type: Schema.Types.ObjectId,
-			ref: "categoryModel",
+			ref: "Category",
 			required: true,
 		},
 		description: {

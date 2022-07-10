@@ -6,7 +6,9 @@ import createHttpError from "http-errors";
 const getProduct = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		var id = req.params.product_id;
+
 		const product = await productModel.findById(id).populate("category");
+		console.log(product);
 		if (!product) {
 			res.status(200).json({
 				success: true,
@@ -19,6 +21,7 @@ const getProduct = async (req: Request, res: Response, next: NextFunction) => {
 			});
 		}
 	} catch (error) {
+		console.log(error);
 		next(createHttpError("could not fetch product"));
 	}
 };
@@ -33,8 +36,8 @@ const filterProducts = async (
 			productName: req.query.name
 				? { $regex: `*${req.query.name}*`, $options: "i" }
 				: undefined,
-			category: req.query.categoryName
-				? { $regex: `*${req.query.categoryName}*`, $options: "i" }
+			category: req.query.categoryId
+				? { $regex: `*${req.query.categoryId}*`, $options: "i" }
 				: undefined,
 			price: {
 				$gte: req.query.low || req.query.price || 0,
@@ -49,32 +52,69 @@ const filterProducts = async (
 			},
 		};
 		params = JSON.parse(JSON.stringify(params));
-		const data = productModel.find({ ...params }).select("-discount");
+		console.log(params);
+		const data = await productModel.find({ ...params }).select("-discount");
+
 		res.status(200).json({
 			success: true,
 			data,
 		});
 	} catch (error) {
+		console.log(error);
 		next(error);
+	}
+};
+
+const findByCart = async (req: Request, res: Response, next: NextFunction) => {
+	let params = req.params.categoryName;
+	try {
+		if (params) {
+			let data = await productModel.findByCategory(params);
+			res.status(200).json({
+				success: true,
+				data,
+			});
+		} else {
+			res.status(400).json({
+				success: false,
+				message: "data is missing",
+			});
+		}
+	} catch (error) {
+		res.status(500).json({
+			success: false,
+			message: `find By Category has this error ${error}`,
+		});
 	}
 };
 
 const add_product = async (req: Request, res: Response, next: NextFunction) => {
 	try {
-		let product = req.body;
+		let product = {
+			productName: req.body.productName,
+			category: req.body.categoryName,
+			description: req.body.description,
+			discount: req.body.discount,
+			price: req.body.price,
+			quantity: req.body.quantity,
+			productPic: [] as any[],
+		};
+		req.body.productPic.forEach((element: string) => {
+			product.productPic.push({ location: element });
+		});
+		console.log(product.category);
 		const id = await categoryModel.findOne(
 			{
-				categoryName: product.productLine,
+				categoryName: product.category,
 			},
 			{ _id: 1 }
 		);
 
 		product["category"] = id?._id;
+		console.log(product);
+		const products = await productModel.create(product);
 
-		const products = new productModel(product);
-		await products.save();
-
-		res.json({ success: true, return: 0 });
+		res.json({ success: true, return: products });
 	} catch (error) {
 		next(error);
 	}
@@ -142,4 +182,5 @@ export {
 	change_quan,
 	getProduct,
 	filterProducts,
+	findByCart,
 };

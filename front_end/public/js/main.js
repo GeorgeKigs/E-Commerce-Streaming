@@ -49,9 +49,11 @@ async function get_data(url) {
 	let data = null;
 	try {
 		// handle the errors that may occur
-		data = await fetch(`http://localhost:5000${url}`, {
-			headers: { authorization: token },
-		}).json();
+		data = await (
+			await fetch(`http://localhost:5000${url}`, {
+				headers: { authorization: `Bearer ${token}` },
+			})
+		).json();
 		if (data["success"]) {
 			return data;
 		} else {
@@ -76,9 +78,10 @@ const send_data = async (url, data) => {
 		};
 		var token = get_user_token();
 		if (token) {
-			headers["Authorization"] = token;
+			headers["Authorization"] = `Bearer ${token}`;
 		}
-		var registration = await fetch(`http://localhost:5000/${url}`, {
+		console.log(headers);
+		var registration = await fetch(`http://localhost:5000${url}`, {
 			method: "post",
 			body: JSON.stringify(data),
 			headers,
@@ -131,40 +134,14 @@ const registration = async (data) => {
 };
 
 async function setAddress() {
-	var data = {
-		success: true,
-		message: "Address was added",
-		data: {
-			_id: "62c5dcd523b2e452ccb601eb",
-			user: "62c54675582f5b0886c95f7f",
-			address: [
-				{
-					street: "Kikuyu",
-					zipcode: "Kinoo",
-					city: "Kiambu",
-					phoneNumber: 710112916,
-					date: "2022-07-06T18:33:02.150Z",
-					_id: "62c5dce123b2e452ccb601f0",
-				},
-				{
-					street: "Kikuyu",
-					zipcode: "Death Valley",
-					city: "Kiambu",
-					phoneNumber: 710112916,
-					date: "2022-07-06T18:33:02.150Z",
-					_id: "62c5dce123b2e452ccb0",
-				},
-			],
-			createdAt: "2022-07-06T19:04:53.496Z",
-			updatedAt: "2022-07-06T19:05:05.794Z",
-			__v: 0,
-		},
-	};
-	// var data = await get_data("users/address");
-	if (data) {
+	//
+	var data = await get_data("/users/address/");
+	if (data.data) {
 		let addresses = data.data.address;
 		// get the t-body
+
 		let t_body = document.getElementById("address_table");
+		t_body.innerHTML = null;
 		addresses.forEach((element) => {
 			let tr = document.createElement("tr");
 			tr.innerHTML = `
@@ -198,16 +175,14 @@ async function address_func(event) {
 		street: values["street_address"],
 		city: values.city,
 		zipcode: values.zipCode,
+		phone_number: values.phone_number,
 	};
 	// check for the addresses
 	let addr = document.getElementById("address_table").hasChildNodes();
 
 	try {
-		// if (addr) {
-		// 	await send_data("/users/address/createAddress", addr_data);
-		// } else {
-		// 	await send_data("/users/address/addAddress", addr_data);
-		// }
+		await send_data("/users/address/addAddress", addr_data);
+
 		setAddress();
 	} catch (error) {
 		alert("We could not send the data.");
@@ -268,9 +243,9 @@ const login_function = async (event) => {
 		console.log(json);
 		if (json["success"] == true) {
 			if (rem) {
-				localStorage.setItem("Authorization", json["token"]);
+				localStorage.setItem("authorization", json["token"]);
 			}
-			sessionStorage.setItem("Authorization", json["token"]);
+			sessionStorage.setItem("authorization", json["token"]);
 			localStorage.setItem("uuid", json["uuid"]);
 		} else {
 			handleErrors(json["message"]);

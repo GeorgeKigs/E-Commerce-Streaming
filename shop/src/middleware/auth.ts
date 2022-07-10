@@ -38,6 +38,7 @@ const sign_token = (data: any): string => {
  * Checks the validity of the token, and if the user is in the database.
  * @params req,res,next
  */
+
 const auth_req = async (req: Request, res: Response, next: NextFunction) => {
 	var auth_error = createHttpError("Unauthorised");
 	try {

@@ -39,10 +39,10 @@ const auth_req = async (req: Request, res: Response, next: NextFunction) => {
 	 */
 	try {
 		var header = req.headers["authorization"];
-		console.log(req.headers);
 		if (!header) {
 			return next("Unauthorised");
 		}
+		console.log(header);
 		// var host = req.headers["from"];
 		var token = "";
 		if (typeof header == "string") {
@@ -50,6 +50,7 @@ const auth_req = async (req: Request, res: Response, next: NextFunction) => {
 		} else {
 			return next("token is unauthorized");
 		}
+		console.log(token);
 		const data = await getData(token);
 		console.log(data);
 		if (data) {

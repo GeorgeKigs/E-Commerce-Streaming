@@ -11,8 +11,8 @@ const categoriesRouter: express.IRouter = express.Router();
 
 /* GET users listing. */
 categoriesRouter.get("/", getCartegory);
-categoriesRouter.post("/addCategory", auth_req, add_cat);
-categoriesRouter.post("/delCategory", auth_req, remove_cat);
-categoriesRouter.post("/editCategory", auth_req, edit_cat);
+categoriesRouter.post("/addCategory", add_cat);
+categoriesRouter.post("/delCategory", remove_cat);
+categoriesRouter.post("/editCategory", edit_cat);
 
 export { categoriesRouter };

@@ -1,20 +1,19 @@
 import { Consumer, Kafka } from "kafkajs";
 import mongoose from "mongoose";
 import dotenv = require("dotenv");
-
-dotenv.config({ path: "./env" });
+import configs from "./configs/configs";
 
 const connection = async () => {
-	const con_str = process.env["MONGODB_URL"];
+	const con_str = configs.mongodb_url;
 	if (con_str) {
+		console.log(con_str);
 		await mongoose.connect(con_str);
 	}
-	throw Error("cannot connect without env variables");
 };
 
 const kafka = () => {
-	const client_id = process.env["KAFKA_CLIENTID"];
-	const broker = process.env["KAFKA_BROKER"];
+	const client_id = configs.kafka_consumer_group;
+	const broker = configs.kafka_topic_broker;
 
 	if (broker) {
 		const kafka = new Kafka({
