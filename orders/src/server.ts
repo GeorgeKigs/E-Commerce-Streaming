@@ -50,8 +50,8 @@ app.use(function (
 	});
 });
 
-app.listen(5002, () => {
-	console.log("Server has started at http://localhost:5002");
+app.listen(5004, () => {
+	console.log("Server has started at http://localhost:5004");
 });
 
 export default app;

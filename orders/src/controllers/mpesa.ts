@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
-// import datetime from "node-datetime";
+// @ts-ignore
+import datetime from "node-datetime";
 import dotenv from "dotenv";
 dotenv.config({ path: "../../.env" });
 
@@ -25,7 +26,7 @@ class MpesaImp {
 
 		let buffer = Buffer.from(`${consumer_key}:${consumer_secret}`, "utf-8");
 		let key = buffer.toString("base64");
-
+		// @ts-ignore
 		let req = await fetch(
 			`https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=${authorization}`,
 			{
@@ -39,9 +40,10 @@ class MpesaImp {
 	};
 
 	private get_time = () => {
-		// const dt = datetime.create();
-		// return dt.format("YmdHMS");4
-		return "";
+		const dt = datetime.create();
+		return dt.format("YmdHMS");
+		4;
+		// return "";
 	};
 
 	private get_pass = () => {
@@ -77,6 +79,7 @@ class MpesaImp {
 	public pay = async (amt: number, PhoneNumber: number, product: string) => {
 		let data = this.define_data(amt, PhoneNumber, product);
 		let token = (await this.access_token)["access_token"];
+		// @ts-ignore
 		let new_data: any = await fetch(
 			"https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
 			{
@@ -97,4 +100,4 @@ const verification = async () => {};
 
 const messageCallback = async () => {};
 
-export default MpesaImp;
+export { MpesaImp };
