@@ -9,8 +9,7 @@
 			name="viewport"
 			content="width=device-width, initial-scale=1, shrink-to-fit=no"
 		/>
-		<!-- The above 4 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-
+		
 		<!-- Title  -->
 		<title>TAUSI</title>
 
@@ -32,11 +31,12 @@
 				<div class="row">
 					<div class="col-12">
 						<div class="search-content">
-							<form action="#" method="get">
+							<form action="#" method="get" id="search-form">
 								<input
 									type="search"
 									name="search"
-									id="search"
+									id="search-input"
+									required
 									placeholder="Type your keyword..."
 								/>
 								<button type="submit">

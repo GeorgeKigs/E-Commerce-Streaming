@@ -7,6 +7,7 @@ import {
 	getProduct,
 	filterProducts,
 	findByCart,
+	search,
 } from "../controllers/products";
 import { auth_req } from "../middleware/auth";
 
@@ -15,6 +16,7 @@ var router = express.Router();
 router.get("/productId/:product_id", getProduct);
 router.get("/filterProducts", filterProducts);
 router.get("/findByCategory", findByCart);
+router.get("/search", search);
 //handle photo uploads
 
 router.post("/addProduct", add_product);

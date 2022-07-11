@@ -26,25 +26,44 @@ const getProduct = async (req: Request, res: Response, next: NextFunction) => {
 	}
 };
 
+const search = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		let name = req.query.searchTerm;
+
+		let product_data = await productModel
+			.find({
+				productName: req.query.name
+					? { $regex: `*${name}*`, $options: "i" }
+					: undefined,
+			})
+			.limit(10);
+
+		res.status(200).json({
+			succes: true,
+			data: product_data,
+		});
+	} catch (error) {
+		next(Error(`could not search the products due to ${error}`));
+	}
+};
+
 const filterProducts = async (
 	req: Request,
 	res: Response,
 	next: NextFunction
 ) => {
 	try {
+		console.log(req.query);
 		let params = {
-			productName: req.query.name
-				? { $regex: `*${req.query.name}*`, $options: "i" }
-				: undefined,
 			category: req.query.categoryId
-				? { $regex: `*${req.query.categoryId}*`, $options: "i" }
+				? req.query.categoryId.toString().toLowerCase()
 				: undefined,
 			price: {
 				$gte: req.query.low || req.query.price || 0,
 				$lte: req.query.high || req.query.price,
 			},
 			"tag.tagName": req.query.tagName
-				? { $regex: `*${req.query.tagName}*`, $options: "i" }
+				? req.query.tagName.toString().toLowerCase()
 				: undefined,
 			quantity: {
 				$lte: req.query.quantity,
@@ -53,8 +72,13 @@ const filterProducts = async (
 		};
 		params = JSON.parse(JSON.stringify(params));
 		console.log(params);
-		const data = await productModel.find({ ...params }).select("-discount");
-
+		let data = {} as any;
+		if (params) {
+			data = await productModel.find({ ...params }).select("-discount");
+		} else {
+			data = await productModel.find({});
+		}
+		console.log(data);
 		res.status(200).json({
 			success: true,
 			data,
@@ -183,4 +207,5 @@ export {
 	getProduct,
 	filterProducts,
 	findByCart,
+	search,
 };

@@ -116,6 +116,7 @@ statics.findByCategory = async function (
 	var categoryId = await categoryModel
 		.findOne({ categoryName: { $regex: `*${categoryName}*` }, $options: "i" })
 		.select("_id");
+	// add ids to a list to search
 	if (categoryId) {
 		var products = await productModel
 			.find({ category: categoryId })
