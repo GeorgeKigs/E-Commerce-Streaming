@@ -4,8 +4,7 @@ import {
 	address_func,
 	registration_func,
 } from "./auth.js";
-import { get_cart } from "./checkout.js";
-import { getCart } from "./get-cart.js";
+import { set_cart, get_cart } from "./get-cart.js";
 import { get_categories } from "./index_page.js";
 import { getProducts, search } from "./shop-prods.js";
 import { single_product_page } from "./single-product.js";
@@ -48,14 +47,14 @@ function main() {
 	var page = link.split("/")[3];
 	if (page == "home" || !page) page = "index";
 	try {
-		headers(page);
+		// headers(page);
 		let PAGES = {
 			index: get_categories,
 			"product-details": single_product_page,
 			shop: getProducts,
-			cart: getCart,
+			cart: set_cart,
 			login: login_func,
-			register: registration_func,
+			registration: registration_func,
 			checkout: checkout_page,
 		};
 		let func = PAGES[page];

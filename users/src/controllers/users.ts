@@ -53,6 +53,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 				email: data?.email,
 				phoneNumber: data?.phoneNumber,
 			};
+			console.log("login page we were here");
 			console.log(data);
 
 			const token = generateToken(data);

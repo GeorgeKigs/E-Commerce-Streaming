@@ -5,24 +5,8 @@ import {
 	get_user_token,
 	gen_uuid,
 } from "./utils.js";
-async function get_cart() {
-	let cart = {
-		products: [],
-	}; //JSON.parse(localStorage.getItem("cart") || {})
-	let local_cart = null;
-	if (!local_cart) {
-		let token = get_user_token(); // defined in the main db
-		token = null;
-		if (token) {
-			local_cart = await get_data("/orders/cart");
-			localStorage.setItem("cart", JSON.stringify(local_cart));
-		} else {
-			local_cart = cart;
-		}
-	}
 
-	return local_cart;
-}
+import { get_cart } from "./get-cart.js";
 
 const checkout_function = async (event) => {
 	// ? check how to use radio buttons
@@ -39,4 +23,4 @@ if (checkout_btn) {
 	setAddress();
 }
 
-export { get_cart, checkout_function };
+export { checkout_function };

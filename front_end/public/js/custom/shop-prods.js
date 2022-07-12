@@ -71,6 +71,24 @@ function shop_slider_func() {
 	slider.setAttribute("data-max", prices[1]);
 }
 
+function set_metadata(data) {
+	let page_links = Array.from(document.getElementsByClassName("page-link"));
+	page_links.forEach((element) => {
+		element.addEventListener("click", pagination);
+	});
+
+	// class is pagination
+	// remember to add the active class to the page
+	// <li class="page-item"><a class="page-link" href="#">02.</a></li>
+
+	// set the numbers of the products
+	// if the number is 0, get the reminder to add
+
+	// <p>Showing 1-8 0f 25</p>
+
+	// high and low prices
+}
+
 function shop_tags_func() {}
 
 async function shop_category_func(main) {
@@ -97,30 +115,46 @@ async function get_products_data(link) {
 	console.log(link);
 	if (!link.includes("?")) {
 		let data = await get_data("/products/filterProducts");
-		return data.data;
+		return data;
 	}
 	let query = link.split("?");
 	let first_name = query[1].split("=")[0];
 	if (first_name === "searchTerm") {
 		let data = await get_data(`/products/search?${query[1]}`);
-		return data.data;
+		return data;
 	} else {
 		console.log(query);
 		let data = await get_data(`/products/filterProducts?${query[1]}`);
-		return data.data;
+		return data;
 	}
 }
+
+const pagination = async (event) => {
+	event.preventDefault();
+	const eve = event.target.innerText;
+	let link = window.location.href;
+	if (!link.includes("page")) {
+		window.location.href = link + `&page=${eve}`;
+	} else {
+		let new_link = window.location.href.split("&page")[0];
+		window.location.href = new_link + `&page=${eve}`;
+	}
+};
 
 async function getProducts() {
 	let link = window.location.href;
 	const products = await get_products_data(link);
+
+	// attach the pagination for the links
+	set_metadata(products.metadata);
+
 	await shop_category_func(link.includes("?"));
 	// slider
 	shop_slider_func();
 	// tags
 	shop_tags_func();
 	// products
-	set_products_page(products);
+	set_products_page(products.data);
 }
 
 const set_filters = () => {};

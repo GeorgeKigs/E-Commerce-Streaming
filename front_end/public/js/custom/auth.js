@@ -12,12 +12,14 @@ import {
 const registration = async (data) => {
 	console.log(data);
 	try {
-		var registration = await send_data("users/register", data);
+		var registration = await send_data("/users/register", data);
+		console.log(registration);
 		if (registration["success"] == true) {
 			localStorage.setItem("phoneNumber", data["phoneNumber"]);
 			localStorage.setItem("uuid", registration["uuid"]);
-			localStorage.setItem("authorization", registration["token"]);
-			sessionStorage.setItem("authorization", registration["token"]);
+			// localStorage.setItem("authorization", registration["token"]);
+			// sessionStorage.setItem("authorization", registration["token"]);
+			window.location.href = "login";
 		} else {
 			handleErrors(registration["message"]);
 		}
@@ -143,16 +145,17 @@ async function login_event(event) {
 	delete values["rem_check"];
 
 	try {
-		const json = await send_data("users/login", values);
-		console.log(json);
-		if (json["success"] == true) {
+		const data = await send_data("/users/login", values);
+		console.log(data);
+		if (data["success"] == true) {
 			if (rem) {
-				localStorage.setItem("authorization", json["token"]);
+				localStorage.setItem("authorization", data["token"]);
 			}
-			sessionStorage.setItem("authorization", json["token"]);
-			localStorage.setItem("uuid", json["uuid"]);
+			sessionStorage.setItem("authorization", data["token"]);
+			localStorage.setItem("uuid", data["uuid"]);
+			window.location.href = "index";
 		} else {
-			handleErrors(json["message"]);
+			handleErrors(data["message"]);
 		}
 	} catch (error) {
 		console.log(error);
@@ -167,9 +170,10 @@ function login_func() {
 }
 
 function registration_func() {
-	let registration_btn = document.getElementById("registration_btn");
+	let registration_btn = document.getElementById("registration_form");
+	console.log("registration");
 	if (registration_btn) {
-		registration_btn.addEventListener("click", registration_event);
+		registration_btn.addEventListener("submit", registration_event);
 	}
 }
 

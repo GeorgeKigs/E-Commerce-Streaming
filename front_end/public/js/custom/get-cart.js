@@ -5,6 +5,31 @@ import {
 	get_user_token,
 	gen_uuid,
 } from "./utils.js";
+
+async function update_cart() {
+	// synchronize the application with the backend
+}
+
+async function get_cart() {
+	let cart = [];
+	//JSON.parse(localStorage.getItem("cart") || {})
+	let local_cart = JSON.parse(localStorage.getItem("cart"));
+
+	if (!local_cart) {
+		let token = get_user_token(); // defined in the main db
+		token = null;
+
+		if (token) {
+			local_cart = await get_data("/orders/cart");
+			localStorage.setItem("cart", JSON.stringify(local_cart));
+		} else {
+			local_cart = cart;
+		}
+	}
+
+	return local_cart;
+}
+
 function qty_minus(event) {
 	// <span class="qty-minus" onclick="var effect = document.getElementById('qty'); var qty = effect.value; if( !isNaN( qty ) &amp;&amp; qty &gt; 1 ) effect.value--;return false;"><i class="fa fa-minus" aria-hidden="true"></i></span>
 	// <input type="number" class="qty-text" id="qty" step="1" min="1" max="300" name="quantity" value="1">
@@ -30,7 +55,7 @@ function calculate_total(products) {
 	document.getElementById("total_price").innerText = sum + delivery_fee;
 }
 
-async function getCart() {
+async function set_cart() {
 	console.log("cart");
 	//     user:
 	//     products: [
@@ -95,4 +120,4 @@ async function getCart() {
 	// set the image
 }
 
-export { getCart };
+export { set_cart, get_cart };

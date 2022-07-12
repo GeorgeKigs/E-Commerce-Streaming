@@ -3,6 +3,12 @@ import { Request, Response, NextFunction } from "express";
 import categoryModel from "../models/categories";
 import createHttpError from "http-errors";
 
+const gen_metadata = async (query: any) => {
+	console.log(
+		`This might be changed due the reccomendation system. But it uses aggregation of the products`
+	);
+};
+
 const getProduct = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		var id = req.params.product_id;
@@ -28,7 +34,27 @@ const getProduct = async (req: Request, res: Response, next: NextFunction) => {
 
 const search = async (req: Request, res: Response, next: NextFunction) => {
 	try {
+		// include pagination
 		let name = req.query.searchTerm;
+		let page = req.query.page as string;
+		let limit = req.query.limit as string;
+		let int_page = 1;
+		let int_limit = 10;
+
+		let count = await productModel
+			.find({
+				productName: req.query.name
+					? { $regex: `*${name}*`, $options: "i" }
+					: undefined,
+			})
+			.count();
+
+		if (page) {
+			int_page = parseInt(page);
+		}
+		if (limit) {
+			int_limit = parseInt(limit);
+		}
 
 		let product_data = await productModel
 			.find({
@@ -36,10 +62,12 @@ const search = async (req: Request, res: Response, next: NextFunction) => {
 					? { $regex: `*${name}*`, $options: "i" }
 					: undefined,
 			})
-			.limit(10);
+			.skip((int_page - 1) * int_limit)
+			.limit(int_limit);
 
 		res.status(200).json({
 			succes: true,
+			metadata: { count, pages: Math.ceil(count / int_limit) },
 			data: product_data,
 		});
 	} catch (error) {
@@ -47,11 +75,7 @@ const search = async (req: Request, res: Response, next: NextFunction) => {
 	}
 };
 
-const filterProducts = async (
-	req: Request,
-	res: Response,
-	next: NextFunction
-) => {
+async function filterProducts(req: Request, res: Response, next: NextFunction) {
 	try {
 		console.log(req.query);
 		let params = {
@@ -70,24 +94,46 @@ const filterProducts = async (
 				$gte: req.query.quantity || 1,
 			},
 		};
+		let page = req.query.page as string;
+		let limit = req.query.limit as string;
+		let int_page = 1;
+		let int_limit = 10;
+
+		if (page) {
+			int_page = parseInt(page);
+		}
+		if (limit) {
+			int_limit = parseInt(limit);
+		}
 		params = JSON.parse(JSON.stringify(params));
 		console.log(params);
+
+		let count = await productModel.find({ ...params }).count();
+
 		let data = {} as any;
 		if (params) {
-			data = await productModel.find({ ...params }).select("-discount");
+			data = await productModel
+				.find({ ...params })
+				.select("-discount")
+				.limit(int_limit)
+				.skip((int_page - 1) * int_limit);
 		} else {
-			data = await productModel.find({});
+			data = await productModel
+				.find({})
+				.limit(int_limit)
+				.skip((int_page - 1) * int_limit);
 		}
 		console.log(data);
 		res.status(200).json({
 			success: true,
+			metadata: { count, pages: Math.ceil(count / int_limit) },
 			data,
 		});
 	} catch (error) {
 		console.log(error);
 		next(error);
 	}
-};
+}
 
 const findByCart = async (req: Request, res: Response, next: NextFunction) => {
 	let params = req.params.categoryName;

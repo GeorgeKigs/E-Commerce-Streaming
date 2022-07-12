@@ -18,6 +18,10 @@ const gen_uuid = async () => {
 	return id;
 };
 
+/**
+ * This gets the user token used to login
+ * @returns token
+ */
 function get_user_token() {
 	var token = sessionStorage.getItem("authorization");
 	console.log(token);
