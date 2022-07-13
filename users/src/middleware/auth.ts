@@ -81,7 +81,9 @@ const auth_not_req = async (
 		// var host = req.headers["from"];
 
 		const token = header?.split(" ")[1];
-
+		if (!token) {
+			next("Unauthorised");
+		}
 		const data = await verifyToken(token);
 		if (!data) {
 			return next();

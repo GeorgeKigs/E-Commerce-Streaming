@@ -1,3 +1,4 @@
+import { add_to_cart_single } from "./get-cart.js";
 import {
 	send_data,
 	get_data,
@@ -45,6 +46,11 @@ async function set_single_product(data) {
 	// set the category
 	let category = document.getElementById("category");
 	category.innerText = data.category.categoryName;
+
+	// set the id of the page
+	let form = document.getElementsByClassName("cart").item(0);
+	form.addEventListener("submit", add_to_cart_single);
+	form.setAttribute("id", data._id);
 
 	// set the images of the product
 	let pics = document.getElementsByClassName("carousel-indicators").item(0);

@@ -42,6 +42,7 @@ app.use(function (
 
 	// render the error page
 	res.status(500).json({
+		success: false,
 		error: err.message,
 	});
 });

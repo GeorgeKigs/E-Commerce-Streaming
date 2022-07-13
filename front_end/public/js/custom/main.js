@@ -1,17 +1,9 @@
-import {
-	login_func,
-	logout_func,
-	address_func,
-	registration_func,
-} from "./auth.js";
-import { set_cart, get_cart } from "./get-cart.js";
+import { login_func, logout_func, registration_func } from "./auth.js";
+import { checkout_main_func } from "./checkout.js";
+import { get_cart, cart_page_func } from "./get-cart.js";
 import { get_categories } from "./index_page.js";
 import { getProducts, search } from "./shop-prods.js";
 import { single_product_page } from "./single-product.js";
-
-function checkout_page() {
-	address_func();
-}
 
 /**
  * Sets the navigation links of the files.
@@ -25,7 +17,7 @@ async function headers(heading) {
 
 	// set the number of goods in the cart
 	let cart = await get_cart();
-	let len = cart.products.length;
+	let len = cart.length;
 	const cart_nav = document.getElementsByClassName("cart-nav").item(0);
 	let span = cart_nav.getElementsByTagName("span").item(0);
 	span.innerText = `(${len})`;
@@ -52,10 +44,10 @@ function main() {
 			index: get_categories,
 			"product-details": single_product_page,
 			shop: getProducts,
-			cart: set_cart,
+			cart: cart_page_func,
 			login: login_func,
 			registration: registration_func,
-			checkout: checkout_page,
+			checkout: checkout_main_func,
 		};
 		let func = PAGES[page];
 		func();

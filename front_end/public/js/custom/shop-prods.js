@@ -41,7 +41,8 @@ async function set_products_page(products) {
 					
 					<div class="cart">
 						<a
-							href="${place_holder}"
+							href="#"
+							on-click="add-cart"
 							data-toggle="tooltip"
 							data-placement="left"
 							title="Add to Cart"
