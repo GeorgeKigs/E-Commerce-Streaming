@@ -6,6 +6,16 @@ import {
 	get_user_token,
 	gen_uuid,
 } from "./utils.js";
+
+async function send_click(productID) {
+	const user = await gen_uuid();
+	const product = productID;
+	send_data(
+		"/tracker/logClicks",
+		JSON.stringify({ user: user, product: productID })
+	);
+}
+function send_cart() {}
 async function get_single_product_data(productID) {
 	const results = await get_data(`/products/productId/${productID}`);
 	console.log(results);

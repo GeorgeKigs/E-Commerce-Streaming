@@ -51,6 +51,19 @@ services:
       - "./orders/src:/src"
     command: npm run dev
 
+  streams_app:
+    build:
+      context: ./streams
+    image: 35552425/orders
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGODB_URL_DOCKER=mongodb://mongo_db:27017/predictions
+    container_name: orders
+    volumes:
+      - "./streams:/app"
+    # command: npm run dev
+
   front_end:
     build:
       context: ./front_end

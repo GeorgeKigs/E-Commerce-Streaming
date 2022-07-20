@@ -9,6 +9,7 @@ certifi==2021.10.8
 cffi==1.15.0
 charset-normalizer==2.0.12
 click==8.0.4
+confluent-kafka==1.9.0
 debugpy==1.5.1
 decorator==5.1.1
 defusedxml==0.7.1
@@ -59,6 +60,7 @@ pyparsing==3.0.7
 pyrsistent==0.18.1
 pyspark==3.2.1
 python-dateutil==2.8.2
+python-dotenv==0.20.0
 pytz==2021.3
 pyzmq==22.3.0
 qtconsole==5.2.2
