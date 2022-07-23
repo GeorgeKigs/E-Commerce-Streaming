@@ -1,3 +1,7 @@
+/**
+ * Checks if there is a uuid within the localStorage
+ * @returns {string} uuid of the user
+ */
 const check_uuid = () => {
 	var id = localStorage.getItem("uuid");
 	if (id) {
@@ -42,7 +46,11 @@ const get_form_data = (input_id) => {
 	});
 	return input_data;
 };
-
+/**
+ *Gets data from the microservices
+ * @param {string} url The url to make a GET request
+ * @returns {null | *}
+ */
 async function get_data(url) {
 	let token = get_user_token();
 	let data = null;
@@ -80,12 +88,14 @@ const send_data = async (url, data) => {
 			headers["Authorization"] = `Bearer ${token}`;
 		}
 		console.log(headers);
+		console.log(data);
 		var registration = await fetch(`http://localhost:5000${url}`, {
 			method: "post",
 			body: JSON.stringify(data),
 			headers,
 		});
 		const json = await registration.json();
+
 		if (json.message == "Unauthorized") {
 			window.location.href = "login";
 		}
@@ -99,4 +109,11 @@ window.onload = () => {
 	gen_uuid();
 };
 
-export { send_data, get_data, get_form_data, get_user_token, gen_uuid };
+export {
+	send_data,
+	get_data,
+	get_form_data,
+	get_user_token,
+	gen_uuid,
+	check_uuid,
+};

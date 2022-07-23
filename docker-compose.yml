@@ -1,29 +1,46 @@
 version: '3.8'
 services:
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.0.0
-    hostname: zookeeper
-    container_name: zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
+  # zookeeper:
+  #   image: confluentinc/cp-zookeeper:7.0.0
+  #   hostname: zookeeper
+  #   container_name: zookeeper
+  #   environment:
+  #     ZOOKEEPER_CLIENT_PORT: 2181
+  #     ZOOKEEPER_TICK_TIME: 2000
 
-  broker:
-    image: confluentinc/cp-kafka:7.0.0
-    container_name: broker
-    ports:
-      - "9092:9092"
-    depends_on:
-      - zookeeper
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+  # broker:
+  #   image: confluentinc/cp-kafka:7.0.0
+  #   container_name: broker
+  #   ports:
+  #     - "9092:9092"
+  #   depends_on:
+  #     - zookeeper
+  #   environment:
+  #     KAFKA_BROKER_ID: 1
+  #     KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  #     KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+  #     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+  # streams_app:
+  #   build:
+  #     context: ./streams
+  #   image: 35552425/streams
+  #   ports:
+  #     - "5050:5000"
+  #   environment:
+  #     - MONGODB_URL_DOCKER=mongodb://mongo_db:27017/
+  #     - KAFKA_URL_DOCKER="broker:29092"
+  #     - FLASK_ENV=development
+  #     - FLASK_DEBUG=True
+  #     # - SPARK_MASTER_DOCKER="spark://spark:7077"
+  #   container_name: streams_app
+  #   volumes:
+  #     - "./streams:/app"
+
 
   shop:
     build:
@@ -38,32 +55,19 @@ services:
       - "./shop/src:/src"
     command: npm run dev
     
-  orders:
-    build:
-      context: ./orders
-    image: 35552425/orders
-    ports:
-      - "5004:5004"
-    environment:
-      - MONGODB_URL_DOCKER=mongodb://mongo_db:27017/orders
-    container_name: orders
-    volumes:
-      - "./orders/src:/src"
-    command: npm run dev
-
-  streams_app:
-    build:
-      context: ./streams
-    image: 35552425/orders
-    ports:
-      - "3000:3000"
-    environment:
-      - MONGODB_URL_DOCKER=mongodb://mongo_db:27017/predictions
-    container_name: orders
-    volumes:
-      - "./streams:/app"
-    # command: npm run dev
-
+  # orders:
+  #   build:
+  #     context: ./orders
+  #   image: 35552425/orders
+  #   ports:
+  #     - "5004:5004"
+  #   environment:
+  #     - MONGODB_URL_DOCKER=mongodb://mongo_db:27017/orders
+  #   container_name: orders
+  #   volumes:
+  #     - "./orders/src:/src"
+  #   command: npm run dev
+  
   front_end:
     build:
       context: ./front_end
@@ -103,20 +107,20 @@ services:
     depends_on:
       - front_end
       - users
-      - orders
+      # - orders
     volumes:
       - "./reverse_proxy/nginx.conf:/etc/nginx/conf.d/default.conf"
     ports:
       - "5000:5000"
 
-  ngrok:
-    image: ngrok/ngrok:latest
-    depends_on:
-      - nginx
-    ports:
-      - 4040:4040
-    volumes:
-      - ./ngrok.yml:/etc/ngrok.yml
-    environment:
-      NGROK_CONFIG: '/etc/ngrok.yml'
-      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+  # ngrok:
+  #   image: ngrok/ngrok:latest
+  #   depends_on:
+  #     - nginx
+  #   ports:
+  #     - 4040:4040
+  #   volumes:
+  #     - ./ngrok.yml:/etc/ngrok.yml
+  #   environment:
+  #     NGROK_CONFIG: '/etc/ngrok.yml'
+  #     NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}

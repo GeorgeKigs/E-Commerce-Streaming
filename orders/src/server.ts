@@ -20,13 +20,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-app.use((req: Request, res: Response, next: NextFunction) => {
-	try {
-		connection();
-	} catch (error) {
-		next(createHttpError("Cannot start the database"));
-	}
-});
+try {
+	connection();
+} catch (error) {
+	console.log("Cannot start the database");
+}
 
 app.use("/cart", cartRouter);
 app.use("/orders", ordersRouter);
@@ -34,7 +32,7 @@ app.use("/pay", transRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req: Request, res: Response, next: NextFunction) {
-	next(createHttpError(404, "we did not find the page"));
+	next(createHttpError(500, "we did not find the page"));
 });
 
 app.use(function (

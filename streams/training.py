@@ -9,44 +9,35 @@ from pyspark.ml.feature import StringIndexer
 from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
 import json
 import random
-from misc import read_env, read_kafka_config
+from misc import read_env, read_kafka_config, configs
 
 kafka_configs = read_kafka_config()
-configs = read_env()
-# config("spark.mongodb.input.uri", f"mongodb://127.0.0.1/{db}")\
-host, port = kafka_configs["bootstrap.servers"].split(":")
+env = read_env()
+configs = configs()
+# host, port = configs["kafka_url"].split(":")
+host, port = "localhost:9092".split(":")
+print(host, port)
+
 
 spark = SparkSession.builder.\
     appName("SparkTraining").\
     config('spark.jars.packages', 'org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.0').\
-    config("spark.mongodb.output.uri", f"{configs['MONGODB_URL']}{configs['MONGODB_DB']}.{configs['MONGODB_COL']}")\
-    .config(
-        "spark.mongodb.write.connection.uri",
-        f"{configs['MONGODB_URL']}{configs['MONGODB_DB']}.{configs['MONGODB_COL']}")\
-    .getOrCreate()
-# master("spark://spark:7077").\
+    config('master', configs["spark_master"]).\
+    config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.12:3.0.1").\
+    config("spark.mongodb.output.uri", f"{configs['mongo_write']}").\
+    config("spark.mongodb.write.connection.uri", f"{configs['mongo_write']}").\
+    getOrCreate()
 
 # print(host, port)
 # # read the data
-# df = spark \
-#     .read \
-#     .format("kafka") \
-#     .option("kafka.bootstrap.servers", f"{host}:{port}") \
-#     .option("subscribe", configs["KAFKA_MAIN_TOPIC"]) \
-#     .option("failOnDataLoss", False)\
-#     .load()
 
-df = spark.createDataFrame(
-    [('Clicks', '{"user": "user", "productId": "product", "rating": 5}'),
-     ('Clicks', '{"user": "user1", "productId": "product1", "rating": 5}'),
-     ('Clicks', '{"user": "user2", "productId": "product2", "rating": 3}'),
-     ('Clicks', '{"user": "user3", "productId": "product3", "rating": 4}'),
-     ('Clicks', '{"user": "user", "productId": "product3", "rating": 2}'),
-     ('Clicks', '{"user": "user2", "productId": "product", "rating": 5}'),
-     ('Clicks', '{"user": "user1", "productId": "product2", "rating": 2}'),
-     ('Clicks', '{"user": "user3", "productId": "product1", "rating": 5}'),
-     ('Clicks', '{"user": "user2", "productId": "product2", "rating": 2}')],
-    ['key', "value"])
+df = spark \
+    .read \
+    .format("kafka") \
+    .option("kafka.bootstrap.servers", f"{host}:{port}") \
+    .option("subscribe", configs["kafka_topic"]) \
+    .load()
+
 
 df = df.selectExpr(
     'CAST(key as STRING) key', 'CAST(value AS STRING) value')
@@ -54,7 +45,7 @@ df = df.selectExpr(
 # {"user": user, "productId": product, "rating": rating}
 dataSchema = StructType([
     StructField("user", StringType(), True),
-    StructField("productId", StringType(), True),
+    StructField("productID", StringType(), True),
     StructField("rating", IntegerType(), True)
 ])
 
@@ -99,7 +90,7 @@ data = {
     "regParam": 0.1,
     "userCol": "user-index",
     "ratingCol": "rating",
-    "itemCol": "productId-index"
+    "itemCol": "productID-index"
 }
 
 #
@@ -135,8 +126,11 @@ cvModel = trial.bestModel
 
 pred = cvModel.transform(test)
 
-recomendations = cvModel.recommendForAllUsers(3)
-
+recomendations = cvModel.recommendForAllUsers(5)
+recomendations = recomendations.join(
+    transformed,
+    transformed["user-index"] == recomendations["user-index"]
+)
 
 # rmse = eval.evaluate(pred)
 # print("rmse: ", rmse)
@@ -144,7 +138,14 @@ recomendations = cvModel.recommendForAllUsers(3)
 # cvModel.write().overwrite().save("./temp/model")
 recomendations.write\
     .format("com.mongodb.spark.sql.DefaultSource")\
-    .option("database", "predictions")\
-    .option("collection", "Users")\
+    .option("database", env["MONGODB_DB"])\
+    .option("collection", env["MONGODB_COL"])\
+    .mode("overwrite")\
+    .save()
+
+transformed.select("productID", "productID-index").distinct().write\
+    .format("com.mongodb.spark.sql.DefaultSource")\
+    .option("database", env["MONGODB_DB"])\
+    .option("collection", "transformed-data")\
     .mode("overwrite")\
     .save()

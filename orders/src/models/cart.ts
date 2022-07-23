@@ -63,6 +63,8 @@ const cartSchema = new Schema<cartInt, cartStatics>(
 
 const { statics } = cartSchema;
 
+//! add a pre hook to check the prices
+
 statics.addProduct = async function (products: any): Promise<cartInt | null> {
 	const id = products.product;
 	const product = await (await fetch(`{PROD_URL}/${id}`)).json();

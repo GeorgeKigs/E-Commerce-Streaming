@@ -9,6 +9,7 @@ import {
 import { calculate_total, get_cart } from "./get-cart.js";
 import { address_func } from "./auth.js";
 
+const add_to_order = () => {};
 const checkout_function = async (event) => {
 	// ? check how to use radio buttons
 	event.preventDefault();

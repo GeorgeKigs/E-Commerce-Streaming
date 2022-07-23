@@ -1,7 +1,7 @@
 import { Response, Request, NextFunction } from "express";
 import { cartModel } from "../models/cart";
 import { transactionModel } from "../models/transactions";
-import MpesaImp from "./mpesa";
+import { MpesaImp } from "./mpesa";
 
 const getTrans = async (req: Request, res: Response, next: NextFunction) => {
 	try {
@@ -21,13 +21,19 @@ const getTrans = async (req: Request, res: Response, next: NextFunction) => {
 };
 const payMpesa = async (req: Request, res: Response, next: NextFunction) => {
 	const user = req.body.user._id;
-	const cart_id = req.body.cart._id;
+	// get the price
+	const price = req.body.price;
+	//
 	const phone_number = req.body.phoneNumber;
-	const amount = await cartModel.calculatePrice(cart_id);
-	if (amount) {
+	// const amount = await cartModel.calculatePrice(cart_id);
+	console.log(user, price, phone_number);
+	if (price) {
 		const mpesa = new MpesaImp();
-		mpesa.pay(amount, phone_number, cart_id);
+		mpesa.pay(price, phone_number);
 	}
+	res.status(200).json({
+		data: "Mpesa was successful",
+	});
 };
 const mpesaCallBack = async () => {
 	/**

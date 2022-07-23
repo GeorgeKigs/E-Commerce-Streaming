@@ -63,3 +63,28 @@ def read_kafka_config() -> dict:
     config.read(env["CONFIG_FILE"])
     default = dict(config['default'])
     return default
+
+
+def configs():
+    env = read_env()
+    try:
+        kafka_url = env["KAFKA_URL_DOCKER"]
+    except KeyError:
+        kafka_url = env["KAFKA_URL"]
+    try:
+        mongo_url = env['MONGODB_URL_DOCKER']
+    except KeyError:
+        mongo_url = env["MONGODB_URL"]
+    try:
+        spark_master = env["SPARK_MASTER_DOCKER"]
+    except KeyError:
+        spark_master = env['SPARK_MASTER']
+    config = {
+        "mongo_write": f"{mongo_url}{env['MONGODB_DB']}.{env['MONGODB_COL']}",
+        "kafka_topic": env["KAFKA_CONSUMER_TOPIC"],
+        "kafka_broker": {"bootstrap.servers": kafka_url},
+        "kafka_url": kafka_url,
+        "spark_master": spark_master
+    }
+    print(config)
+    return config

@@ -1,21 +1,67 @@
+
 from flask import Flask, jsonify, request, abort
-from pyspark.ml.tuning import CrossValidator
+from bson import json_util
 import json
-from misc import read_env, main_logger
+from misc import read_env, main_logger, configs
 from publish import WriteKafka
 
+import pymongo
 
-from pyspark.sql import SparkSession
-import pyspark.sql as sql
-from pyspark.sql import functions as func
 
 app = Flask(__name__)
+env = read_env()
+
+logger = main_logger()
+config = configs()
+
+try:
+    # init publisher
+    producer = WriteKafka(topic=config["kafka_topic"])
+    result = producer.create_topic()
+    # start_connection()
+
+    if result:
+        app.run(port=3000)
+        logger.info("Server Started")
+    else:
+        logger.critical("Server Closed")
+        exit(1)
+except KeyboardInterrupt as e:
+    logger.critical("Killed by user")
+except Exception as e:
+    logger.critical(f"Error occurred {e}")
 
 
-@app.route("/predict/<uuid:userID>")
-def load_model():
-    model = CrossValidator.load("./model")
-    return model.transform()
+@app.route("/predict/<userID>", methods=["GET"])
+def load_predictions(userID):
+    try:
+
+        myclient = pymongo.MongoClient('localhost', 27000)
+        mydb = myclient["predictions"]
+        mydoc = mydb[env["MONGODB_COL"]].find({"user": f"{userID}"})
+        prods = [j['productID-index']
+                 for i in mydoc for j in i["recommendations"]]
+        products = mydb["transformed-data"].find(
+            {"productID-index": {"$in": prods}})
+        results = [i["productID"] for i in products]
+
+        return jsonify({
+            "success": 200,
+            "data": results
+        }), 200
+    except Exception as e:
+        logger.error(f"error: {e}")
+        return jsonify({
+            "success": False,
+            "data": e
+        }), 500
+
+
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({
+        "hello": "world"
+    })
 
 
 @app.route("/logClicks", methods=["POST"])
@@ -24,8 +70,11 @@ def log():
     # input data = { user: user, product: productID }
     try:
         data = request.get_json()
-        data.update({"rating": 2})
-        producer.publish("Clicks", json.dumps(data))
+        user = data["uuid"]
+        product = data["productID"]
+        rating = 2
+        producer.publish("Clicks", json.dumps(
+            {"user": user, "productID": product, "rating": rating}))
 
         return jsonify({
             "success": 200,
@@ -41,8 +90,13 @@ def log_hover():
 
     try:
         data = request.get_json()
-        data.update({"rating": 1})
-        producer.publish("Hover", json.dumps(data))
+
+        user = data["uuid"]
+        product = data["productID"]
+        rating = 1
+
+        producer.publish("Hover", json.dumps(
+            {"user": user, "productID": product, "rating": rating}))
 
         return jsonify({
             "success": 200,
@@ -63,17 +117,18 @@ def log_cart():
 
     try:
         data = request.get_json()
-        user = data["user"]
+        user = data["uuid"]
         product = data["productID"]
         rating = 3
+        logger.info(f"we recieved data: ")
         producer.publish("Cart", json.dumps(
-            {"user": user, "productId": product, "rating": rating}))
+            {"user": user, "productID": product, "rating": rating}))
         return jsonify({
             "success": True,
             "data": True
         }), 200
     except Exception as e:
-        print(e.with_traceback())
+        logger.error(f"log_clicks: {e}")
         abort(500)
 
 
@@ -85,7 +140,7 @@ def log_orders():
         json_data = request.get_json()
         data = [{
             "user": json_data["uuid"],
-            "product":j["product"],
+            "productID":j["productID"],
             "rating":4
         } for j in json_data["products"]]
         for single_data in data:
@@ -96,10 +151,10 @@ def log_orders():
             "success": True,
             "data": True
         })
-    except:
+    except Exception as e:
         return jsonify({
-            "success": True,
-            "data": True
+            "success": False,
+            "data": e
         })
 
 
@@ -115,7 +170,7 @@ def page_not_found(error):
 def server_error(error):
     return jsonify({
         "success": False,
-        "data": f"server error due to "
+        "data": f"server error due to {error}"
     }), 500
 
 
@@ -127,23 +182,4 @@ def hello():
 
 
 if __name__ == "__main__":
-    # init server
-
-    env = read_env()
-    start = False
-    logger = main_logger()
-    try:
-        # init publisher
-        producer = WriteKafka(topic=env["KAFKA_CONSUMER_TOPIC"])
-        result = producer.create_topic()
-
-        if result:
-            app.run(host="0.0.0.0", port=3000)
-            logger.info("Server Started")
-        else:
-            logger.critical("Server Closed")
-            exit(1)
-    except KeyboardInterrupt as e:
-        logger.critical("Killed by user")
-    except Exception as e:
-        logger.critical("Error occurred")
+    app.run(host="0.0.0.0", port=3000)

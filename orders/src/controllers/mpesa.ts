@@ -2,7 +2,8 @@ import fetch from "node-fetch";
 // @ts-ignore
 import datetime from "node-datetime";
 import dotenv from "dotenv";
-dotenv.config({ path: "../../.env" });
+import axios from "axios";
+dotenv.config({ path: "env" });
 
 class MpesaImp {
 	private time: string;
@@ -20,34 +21,40 @@ class MpesaImp {
 	}
 
 	private get_access_token = async (): Promise<any | null> => {
-		const consumer_key = process.env["CONS_KEY"];
-		const consumer_secret = process.env["CONS_SECRET"];
-		const authorization = process.env["MPESA_AUTH"];
+		const consumer_key = "phoAcAdoyM5N6IVGGfI5uxA4y4cKdeKv";
+		const consumer_secret = "MRGvmpPfDsJ2URkz";
+		const authorization = "client_credentials";
 
+		// CONS_KEY =
+		// CONS_SECRET =
+		// PASS_KEY =
 		let buffer = Buffer.from(`${consumer_key}:${consumer_secret}`, "utf-8");
+
 		let key = buffer.toString("base64");
+		console.log(key);
 		// @ts-ignore
-		let req = await fetch(
-			`https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=${authorization}`,
+		let req = await axios.get(
+			`https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials`,
 			{
 				headers: {
-					Authorization: `Basic ${key}`,
+					Authorization: `Bearer cFJZcjZ6anEwaThMMXp6d1FETUxwWkIzeVBDa2hNc2M6UmYyMkJmWm9nMHFRR2xWOQ==`,
 				},
 			}
 		);
-		var data = (await req.json()) as any;
+		var data = req.data as any;
+		console.log(data);
 		return data;
 	};
 
 	private get_time = () => {
 		const dt = datetime.create();
 		return dt.format("YmdHMS");
-		4;
 		// return "";
 	};
 
 	private get_pass = () => {
-		const pass_key = process.env["PASS_KEY"];
+		const pass_key =
+			"bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919";
 		const time = this.time;
 		const pass = Buffer.from(
 			`${this.bus_no}${pass_key}${time}`,
@@ -56,7 +63,7 @@ class MpesaImp {
 		return pass;
 	};
 
-	private define_data = (amt: number, PhoneNumber: number, order: string) => {
+	private define_data = (amt: number, PhoneNumber: number) => {
 		let callback_url = process.env["MPESA_CALLBACK"];
 		let company = process.env["COMPANY"];
 
@@ -70,15 +77,17 @@ class MpesaImp {
 			PartyB: this.bus_no,
 			PhoneNumber: PhoneNumber,
 			CallBackURL: `${callback_url}`,
-			AccountReference: `${company}`,
-			TransactionDesc: `Payment of order :${order}`,
+			AccountReference: `Kikoto Calc`,
+			TransactionDesc: `PAY TO TAUSI`,
 		};
 		return data;
 	};
 
-	public pay = async (amt: number, PhoneNumber: number, product: string) => {
-		let data = this.define_data(amt, PhoneNumber, product);
+	public pay = async (amt: number, PhoneNumber: number) => {
+		let data = this.define_data(amt, PhoneNumber);
 		let token = (await this.access_token)["access_token"];
+
+		console.log(token);
 		// @ts-ignore
 		let new_data: any = await fetch(
 			"https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",

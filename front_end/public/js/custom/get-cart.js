@@ -4,76 +4,184 @@ import {
 	get_form_data,
 	get_user_token,
 	gen_uuid,
+	check_uuid,
 } from "./utils.js";
+// import { send_log_click, send_log_hover, send_log_cart } from "./shop-prods.js";
 
-async function update_cart() {
-	// synchronize the application with the backend
-}
-
-async function get_cart() {
-	let cart = localStorage.getItem("cart") || "[]";
-	let local_cart = JSON.parse(cart);
-
-	if (!local_cart) {
-		let token = get_user_token(); // defined in the main db
-		token = null;
-		if (token) {
-			db_cart = await get_data("/orders/cart");
-			local_cart = db_cart.products;
-			localStorage.setItem("cart", JSON.stringify(local_cart));
+/**
+ * Delete products from the cart
+ * @param {string} product
+ * @returns {Promise<boolean>} False if there is an error
+ */
+async function pull_cart(product) {
+	// change the details in the cart
+	// let cart = JSON.parse(localStorage.getItem("cart"))
+	let cart = [];
+	for (let i = 0; i < cart.length; i++) {
+		const prod = cart[i];
+		if (prod.product == product) {
+			cart.splice(i, 1);
 		}
 	}
+	console.log(cart);
+	localStorage.removeItem("cart");
+	localStorage.setItem("cart", JSON.stringify(cart));
+
+	// check the user token to see if they have logged in
+	let token = get_user_token();
+	if (token) {
+		// send the cart to the db
+		await send_data("/orders/add", cart);
+	}
+	return false;
+}
+
+/**
+ * Gets the cart in both the db and the local storage.
+ * @returns {Promise<[{"product":string,"quantity":number,"price":number}]>} The cart within the system
+ */
+async function get_cart() {
+	// check if user is logged in. push products to the cart
+	let token = get_user_token();
+	if (token) {
+		let db_cart = await get_data("/orders/cart");
+		db_cart.products.forEach(async (prod) => {
+			// adds products to the localStorage Cart
+			await push_cart({ product: prod.product, quantity: prod.quantity });
+		});
+	}
+	// check the cart in the localStorage (updated or not)
+	let cart = localStorage.getItem("cart") || "[]";
+	let local_cart = JSON.parse(cart);
 	return local_cart;
 }
 
+/**
+ * Used to add products to the cart and sends them to the database
+ * @param {{"product":string,"quantity":number,"price":number}} products These are the products we want to return to the user
+ * @returns {Promise<boolean>} boolean
+ */
 async function push_cart(products) {
-	let cart = await get_cart();
-	cart.push(new_prod);
-	const data = await send_data("/orders/addCart", products);
-	if (data.success) {
-		alert("Added to the cart");
-	} else {
-		alert("Cannot add the cart");
+	try {
+		// check for duplicates, append if none
+		let prods = [];
+		let changed = false;
+		for (let i = 0; i < cart.length; i++) {
+			prods.push(cart[i]["product"]);
+		}
+		if (!prods.includes(products.product)) {
+			changed = true;
+			cart.push(products);
+			console.log(cart);
+		}
+	} catch (error) {
+		console.error(error);
+		return false;
 	}
+	//let cart = await get_cart(); wiil not work, user has to be logged in
+	// get the cart within the localStorage
+	let cart = JSON.parse(localStorage.getItem("cart"));
+	console.log("cart: ", cart);
+
+	// if the cart has changed, change the storage
+	if (changed) {
+		// save in the localstorage. i.e remove then add
+		localStorage.removeItem("cart");
+		localStorage.setItem("cart", JSON.stringify(cart));
+
+		// check the user token to see if they have logged in
+		let token = get_user_token();
+		if (token) {
+			// send the cart to the db
+			await send_data("/orders/add", cart);
+		}
+		// send the product to the tracker
+		// send_log_cart({ uuid: check_uuid(), productID: products.product });
+	}
+	return true;
 }
 
 async function change_qty(event) {}
 
 async function add_to_cart(event) {
 	event.preventDefault();
+
 	let id = event.target.id;
+	let product_id = id.split("-")[0];
+	let link = document.getElementById(id);
+	let value = link.getAttribute("value");
+	let price = parseInt(
+		document.getElementById(`${product_id}-price`).getAttribute("value")
+	);
 
 	var new_prod = {
-		product: id,
+		product: value,
 		quantity: 1,
+		price,
 	};
-	push_cart(new_prod);
+	console.log(value);
+	let returned = await push_cart(new_prod);
+	if (returned) {
+		alert("Product has been added");
+	} else {
+		alert("Please try again later");
+	}
 }
 
+/**
+ * Add the product and the quantity after clicking an event
+ * @param {Event} event click event on the page of single products
+ */
 async function add_to_cart_single(event) {
 	event.preventDefault();
 	let id = event.target.id;
-	var qty = document.getElementById("qty").value;
+	var quantity = parseInt(document.getElementById("qty").value);
+	let product = document.getElementById(id).getAttribute("value");
+	let price = parseInt(
+		document.getElementById("price-span").getAttribute("value")
+	);
 	var new_prod = {
-		product: id,
-		quantity: qty,
+		product,
+		quantity,
+		price,
 	};
-	push_cart(new_prod);
+	console.log(new_prod);
+	let returned = await push_cart(new_prod);
+	if (returned) {
+		alert("Product has been added");
+	} else {
+		alert("Please try again later");
+	}
 }
-function delete_to_cart(event) {}
+
+/**
+ * Delete a product from the cart
+ * @param {Event} event Click event
+ */
+async function delete_to_cart(event) {
+	event.preventDefault();
+	let ans = await pull_cart();
+	if (ans) {
+		alert("Product has been deleted");
+	} else {
+		alert("Please try again deleted");
+	}
+}
 
 function qty_minus(event) {
 	// <span class="qty-minus" onclick="var effect = document.getElementById('qty'); var qty = effect.value; if( !isNaN( qty ) &amp;&amp; qty &gt; 1 ) effect.value--;return false;"><i class="fa fa-minus" aria-hidden="true"></i></span>
 	// <input type="number" class="qty-text" id="qty" step="1" min="1" max="300" name="quantity" value="1">
-	// <span class="qty-plus" onclick="var effect = document.getElementById('qty'); var qty = effect.value; if( !isNaN( qty )) effect.value++;return false;"><i class="fa fa-plus" aria-hidden="true"></i></span>
 }
 
 function qty_plus(event) {
-	// <span class="qty-minus" onclick="var effect = document.getElementById('qty'); var qty = effect.value; if( !isNaN( qty ) &amp;&amp; qty &gt; 1 ) effect.value--;return false;"><i class="fa fa-minus" aria-hidden="true"></i></span>
 	// <input type="number" class="qty-text" id="qty" step="1" min="1" max="300" name="quantity" value="1">
 	// <span class="qty-plus" onclick="var effect = document.getElementById('qty'); var qty = effect.value; if( !isNaN( qty )) effect.value++;return false;"><i class="fa fa-plus" aria-hidden="true"></i></span>
 }
 
+/**
+ * Manipulates the values on the DOM.
+ * @param {[{"price":number,"quantity":number}]} products
+ */
 function calculate_total(products) {
 	// calculate the total price of the products
 	let sum = 0;
@@ -87,6 +195,10 @@ function calculate_total(products) {
 	document.getElementById("total_price").innerHTML = `${sum + delivery_fee}.00`;
 }
 
+/**
+ * DOM manipulation for the cart in the cart page
+ * @param {[{"product":string,"price":number,"quantity":number}]} products
+ */
 async function set_cart(products) {
 	let t_body = document.getElementById("cart_table");
 
@@ -125,6 +237,7 @@ async function set_cart(products) {
 
 		tr.innerHTML = html;
 		t_body.appendChild(tr);
+		// add a delete button
 	});
 
 	// todo: add onclick variables for the plus and minus
@@ -142,6 +255,7 @@ async function set_cart(products) {
 
 async function cart_page_func() {
 	let products = await get_cart();
+
 	console.log(products);
 
 	calculate_total(products);

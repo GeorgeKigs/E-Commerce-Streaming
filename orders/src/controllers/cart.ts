@@ -11,7 +11,7 @@ const getCart = async (req: Request, res: Response, next: NextFunction) => {
 		const user = req.body.user._id;
 		const data = await cartModel
 			.findOne({ user })
-			.select("-createdAt -updatedAt");
+			.select("-createdAt -updatedAt -orderNumber");
 		res.status(200).json({
 			success: true,
 			data,
@@ -40,6 +40,12 @@ const createCart = async (req: Request, res: Response, next: NextFunction) => {
 			if (product) element["price "] = product.price;
 		}
 		data["products"] = [...products];
+
+		var carts = await cartModel.findOne({ user: data["user"] });
+		if (carts) {
+			await cartModel.findOneAndDelete({ user: data["user"] });
+		}
+
 		var cart = await cartModel.create(data);
 		await cart.save();
 		res.status(200).send({

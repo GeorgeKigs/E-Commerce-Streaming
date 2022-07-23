@@ -1,4 +1,5 @@
 import { add_to_cart_single } from "./get-cart.js";
+// import { send_log_click, send_log_hover, send_log_cart } from "./shop-prods.js";
 import {
 	send_data,
 	get_data,
@@ -7,14 +8,6 @@ import {
 	gen_uuid,
 } from "./utils.js";
 
-async function send_click(productID) {
-	const user = await gen_uuid();
-	const product = productID;
-	send_data(
-		"/tracker/logClicks",
-		JSON.stringify({ user: user, product: productID })
-	);
-}
 function send_cart() {}
 async function get_single_product_data(productID) {
 	const results = await get_data(`/products/productId/${productID}`);
@@ -26,6 +19,7 @@ async function get_single_product_data(productID) {
 		window.location.href = "shop";
 		return;
 	}
+	// await send_log_click(productID);
 	return results.data;
 }
 
@@ -40,8 +34,9 @@ async function set_single_product(data) {
 	});
 
 	// set the price of the product
-	document.getElementById("price").innerText = data.price;
-
+	let span_price = document.getElementById("price-span");
+	span_price.setAttribute("value", data.price);
+	span_price.innerText = data.price;
 	// set the quantity
 	document.getElementById("qty").setAttribute("max", data.quantity);
 	if (data.quantity < 1) {
@@ -56,6 +51,9 @@ async function set_single_product(data) {
 	// set the category
 	let category = document.getElementById("category");
 	category.innerText = data.category.categoryName;
+
+	// search operation for the category
+	category.setAttribute("href", `/shop?categoryId=${data.category._id}`);
 
 	// set the id of the page
 	let form = document.getElementsByClassName("cart").item(0);
@@ -108,20 +106,28 @@ async function set_single_product(data) {
 		pics.appendChild(list);
 		parents.appendChild(big_pic);
 	}
-	// search operation for the category
-	category.setAttribute("href", "1445");
+
+	// add content to the cart
+	var cart = document.getElementById("add_cart");
+	cart.addEventListener("click", add_to_cart_single);
+	cart.setAttribute("value", data._id);
 }
 
 async function single_product_page() {
 	const query = window.location.href.split("?")[1];
+
 	if (query && query.includes("=")) {
 		let params = query.split("=");
+
 		if (params[0] !== "productID") {
 			alert("Product has not been found");
 			window.location.href = "shop";
 		}
+
 		let data = await get_single_product_data(params[1]);
+
 		console.log(data);
+
 		if (data) {
 			set_single_product(data);
 		}
@@ -131,6 +137,7 @@ async function single_product_page() {
 	}
 
 	// add to cart functionality
+	// add the click functionality
 }
 
 export { single_product_page };

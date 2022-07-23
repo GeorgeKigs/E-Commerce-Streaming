@@ -16,6 +16,7 @@ const getCartegory = async (
 			success: true,
 			data: data,
 		});
+		console.log(data);
 	} catch (error) {
 		next(createHttpError("Could not get Categories"));
 	}

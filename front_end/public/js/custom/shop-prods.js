@@ -1,4 +1,5 @@
-import { get_data } from "./utils.js";
+import { add_to_cart } from "./get-cart.js";
+import { get_data, gen_uuid, send_data } from "./utils.js";
 
 async function set_products_page(products) {
 	console.log(products);
@@ -8,7 +9,7 @@ async function set_products_page(products) {
 	let place_holder = "place_holder";
 	products.forEach((product) => {
 		let html = `
-		<div class="col-12 col-sm-6 col-md-12 col-xl-6">
+	<div class="col-12 col-sm-6 col-md-12 col-xl-6">
 		<div class="single-product-wrapper">
 			<!-- Product Image -->
 			<div class="product-img">
@@ -24,7 +25,7 @@ async function set_products_page(products) {
 				<!-- Product Meta Data -->
 				<div class="product-meta-data">
 					<div class="line"></div>
-					<p class="product-price">Ksh: ${product.price}</p>
+					<p class="product-price" id="${product._id}-price" value="${product.price}">Ksh: ${product.price}</p>
 					<a href="/product-details?productID=${product._id}">
 						<h6>${product.productName}</h6>
 					</a>
@@ -41,12 +42,17 @@ async function set_products_page(products) {
 					
 					<div class="cart">
 						<a
-							href="#"
-							on-click="add-cart"
+							class="cart-btn-event"
 							data-toggle="tooltip"
 							data-placement="left"
 							title="Add to Cart"
-							><img src="img/core-img/cart.png" alt=""
+							id="${product._id}-link"
+							value="${product._id}"
+							><img 
+							src="img/core-img/cart.png" 
+							id="${product._id}-img" 
+							value="${product._id}"
+							alt=""
 						/></a>
 					</div>
 				</div>
@@ -57,6 +63,11 @@ async function set_products_page(products) {
 		let product_div = document.createElement("div");
 		product_div.innerHTML = html;
 		main_class.appendChild(product_div);
+	});
+	// add cart events
+	let carts = Array.from(document.getElementsByClassName("cart-btn-event"));
+	carts.forEach((cart) => {
+		cart.addEventListener("click", add_to_cart);
 	});
 }
 

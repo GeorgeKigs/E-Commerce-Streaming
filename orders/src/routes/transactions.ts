@@ -6,14 +6,13 @@ import {
 	payMpesa,
 	payPayPal,
 } from "../controllers/transactions";
-import { admin_auth_req, auth_req } from "../middleware/auth";
+import { admin_auth_req } from "../middleware/auth";
 
 const router = express.Router();
 
-router.get("/transaction", auth_req, admin_auth_req, getTrans);
+router.get("/transaction", getTrans);
 router.post("/mpesa/callback", mpesaCallBack);
-router.post("/mpesa", auth_req, payMpesa);
-router.post("/cash", auth_req, payCash);
-router.post("/paypal", auth_req, payPayPal);
+router.post("/mpesa", payMpesa);
+router.post("/cash", payCash);
 
 export { router as transRouter };
