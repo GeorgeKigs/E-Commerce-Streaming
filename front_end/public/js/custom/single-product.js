@@ -53,7 +53,7 @@ async function set_single_product(data) {
 	category.innerText = data.category.categoryName;
 
 	// search operation for the category
-	category.setAttribute("href", `/shop?categoryId=${data.category._id}`);
+	category.setAttribute("href", `shop?categoryId=${data.category._id}`);
 
 	// set the id of the page
 	let form = document.getElementsByClassName("cart").item(0);

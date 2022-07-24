@@ -1,5 +1,6 @@
 import createHttpError from "http-errors";
 import { Schema, model, Types, Model, Document } from "mongoose";
+import { config } from "../configs/configs";
 
 interface cartInt extends Document {
 	orderNumber?: number;
@@ -65,9 +66,22 @@ const { statics } = cartSchema;
 
 //! add a pre hook to check the prices
 
+// cartSchema.pre("save", async function (next) {
+// 	try {
+// 		for (let i = 0; i < this.products.length; i++) {
+// 			const prod = this.products[i];
+// 			let prod_db = await (await fetch(`${config.prod_url}/${prod}`)).json();
+// 			this.products[i]["price"] = prod_db.price;
+// 		}
+// 		next();
+// 	} catch (error) {
+// 		next(Error("cart has not been saved"));
+// 	}
+// });
+
 statics.addProduct = async function (products: any): Promise<cartInt | null> {
 	const id = products.product;
-	const product = await (await fetch(`{PROD_URL}/${id}`)).json();
+	const product = await (await fetch(`${config.prod_url}/${id}`)).json();
 	// check the quantity of the products
 	var data = await cartModel.findOneAndUpdate(
 		{ user: products.user },

@@ -7,7 +7,7 @@ import {
 } from "./utils.js";
 
 import { calculate_total, get_cart } from "./get-cart.js";
-import { address_func } from "./auth.js";
+import { address_func, set_address } from "./auth.js";
 
 const add_to_order = () => {};
 const checkout_function = async (event) => {
@@ -22,8 +22,11 @@ async function checkout_main_func() {
 	let cart = await get_cart();
 	console.log("cart");
 	console.log(cart);
+
 	calculate_total(cart);
 	await address_func();
+	await set_address();
+
 	let checkout_btn = document.getElementById("checkout_form");
 
 	if (checkout_btn) {

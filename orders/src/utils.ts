@@ -1,13 +1,17 @@
 import { Consumer, Kafka } from "kafkajs";
 import mongoose from "mongoose";
 import dotenv = require("dotenv");
+import { config } from "./configs/configs";
 
 dotenv.config({ path: "env" });
 
 const connection = async () => {
 	try {
-		await mongoose.connect("mongodb://localhost:27000/orders");
-		console.log("mongodb://localhost:27000/orders");
+		const url = config.mongodb_url;
+		if (url) {
+			await mongoose.connect(url);
+			console.log(url);
+		}
 	} catch (error) {
 		console.log(error);
 	}

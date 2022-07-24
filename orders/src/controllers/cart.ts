@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { cartModel, cartInt } from "../models/cart";
+import { config } from "../configs/configs";
+import fetch from "node-fetch";
 
 interface Prod {
 	user: cartInt["user"];
@@ -8,7 +10,7 @@ interface Prod {
 
 const getCart = async (req: Request, res: Response, next: NextFunction) => {
 	try {
-		const user = req.body.user._id;
+		const user = req.body.user.data._id;
 		const data = await cartModel
 			.findOne({ user })
 			.select("-createdAt -updatedAt -orderNumber");
@@ -23,9 +25,10 @@ const getCart = async (req: Request, res: Response, next: NextFunction) => {
 const createCart = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		const data = {
-			user: req.body.user._id,
+			user: req.body.user.data._id,
 			products: [] as any[],
 		};
+		console.log(req.body.user);
 		const products = req.body.products as any[];
 		if (!products) {
 			res.status(401).json({
@@ -36,15 +39,14 @@ const createCart = async (req: Request, res: Response, next: NextFunction) => {
 		for (const key in products) {
 			const element = products[key];
 			let id = element["product"];
-			const product = await (await fetch(`{PROD_URL}/${id}`)).json();
-			if (product) element["price "] = product.price;
+			const product = await (await fetch(`${config.prod_url}/${id}`)).json();
+			console.log(product.data.price);
+			if (product) element["price"] = product.data.price;
 		}
 		data["products"] = [...products];
 
-		var carts = await cartModel.findOne({ user: data["user"] });
-		if (carts) {
-			await cartModel.findOneAndDelete({ user: data["user"] });
-		}
+		await cartModel.findOneAndDelete({ user: data["user"] });
+		// console.log(data);
 
 		var cart = await cartModel.create(data);
 		await cart.save();
@@ -59,7 +61,7 @@ const createCart = async (req: Request, res: Response, next: NextFunction) => {
 const addProduct = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		let data = {
-			user: req.body.user._id,
+			user: req.body.user.data._id,
 			products: [
 				{
 					product: req.body.product_id,
@@ -83,7 +85,7 @@ const removeProduct = async (
 ) => {
 	try {
 		let data = {
-			user: req.body.user._id,
+			user: req.body.user.data._id,
 			products: [
 				{
 					product: req.body.product_id,
@@ -106,7 +108,7 @@ const setProdQuantity = async (
 ) => {
 	try {
 		const prod_data = {
-			user: req.body.user._id,
+			user: req.body.user.data._id,
 
 			product: req.body.product_id,
 			quantity: req.body.quantity,
@@ -123,7 +125,7 @@ const setProdQuantity = async (
 
 const deleteCart = async (req: Request, res: Response, next: NextFunction) => {
 	try {
-		const user = req.body.user._id;
+		const user = req.body.user.data._id;
 		const data = cartModel.findOneAndDelete({ user });
 		res.status(200).json({
 			success: true,

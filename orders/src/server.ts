@@ -8,7 +8,7 @@ import { connection } from "./utils";
 import { cartRouter } from "./routes/cart";
 import { ordersRouter } from "./routes/orders";
 import { transRouter } from "./routes/transactions";
-
+import { config } from "./configs/configs";
 var app = express();
 
 // handle the errors that may arise
@@ -26,13 +26,15 @@ try {
 	console.log("Cannot start the database");
 }
 
-app.use("/cart", cartRouter);
+app.use("/orders/cart", cartRouter);
 app.use("/orders", ordersRouter);
-app.use("/pay", transRouter);
+app.use("/orders/pay", transRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req: Request, res: Response, next: NextFunction) {
-	next(createHttpError(500, "we did not find the page"));
+	console.log("orders");
+	console.log(req.url);
+	next(createHttpError(404, "we did not find the page"));
 });
 
 app.use(function (

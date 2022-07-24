@@ -55,18 +55,18 @@ services:
       - "./shop/src:/src"
     command: npm run dev
     
-  # orders:
-  #   build:
-  #     context: ./orders
-  #   image: 35552425/orders
-  #   ports:
-  #     - "5004:5004"
-  #   environment:
-  #     - MONGODB_URL_DOCKER=mongodb://mongo_db:27017/orders
-  #   container_name: orders
-  #   volumes:
-  #     - "./orders/src:/src"
-  #   command: npm run dev
+  orders:
+    build:
+      context: ./orders
+    image: 35552425/orders
+    ports:
+      - "5004:5004"
+    environment:
+      - MONGODB_URL_DOCKER=mongodb://mongo_db:27017/orders
+    container_name: orders
+    volumes:
+      - "./orders/src:/src"
+    command: npm run dev
   
   front_end:
     build:

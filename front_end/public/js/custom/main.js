@@ -4,6 +4,7 @@ import { get_cart, cart_page_func } from "./get-cart.js";
 import { get_categories } from "./index_page.js";
 import { getProducts, search } from "./shop-prods.js";
 import { single_product_page } from "./single-product.js";
+import { check_uuid } from "./utils.js";
 
 /**
  * Sets the navigation links of the files.
@@ -12,8 +13,12 @@ import { single_product_page } from "./single-product.js";
 async function headers(heading) {
 	// set the active link
 	console.log(heading);
-	const link = document.getElementById(`${heading}_li`);
-	link.setAttribute("class", "active");
+	try {
+		const link = document.getElementById(`${heading}_li`);
+		link.setAttribute("class", "active");
+	} catch (error) {
+		console.log("Path is not in the headers");
+	}
 
 	// set the number of goods in the cart
 	let cart = await get_cart();
@@ -22,6 +27,20 @@ async function headers(heading) {
 	let span = cart_nav.getElementsByTagName("span").item(0);
 	span.innerText = `(${len})`;
 
+	// function to logout
+	let token = sessionStorage.getItem("authorization");
+	if (token) {
+		let login_nav = document.getElementsByClassName("login-nav").item(0);
+		login_nav.innerHTML = `<i class="fa fa-user"></i> Logout`;
+		login_nav.setAttribute("id", "logout");
+		login_nav.addEventListener("click", logout_func);
+		login_nav.setAttribute("href", "logout");
+	} else {
+		let login_nav = document.getElementsByClassName("login-nav").item(0);
+		login_nav.innerHTML = `<i class="fa fa-user"></i> Login`;
+		login_nav.setAttribute("id", "login");
+		login_nav.setAttribute("href", "login");
+	}
 	// set the function for wish_list
 
 	// listener to the search form
@@ -39,7 +58,7 @@ function main() {
 	var page = link.split("/")[3];
 	if (page == "home" || !page) page = "index";
 	try {
-		// headers(page);
+		headers(page);
 		let PAGES = {
 			index: get_categories,
 			"product-details": single_product_page,

@@ -189,6 +189,21 @@ async function address_func() {
 	}
 }
 
-function logout_func() {}
+/**
+ * Logout function for the users
+ * @param {Event} event
+ */
+function logout_func(event) {
+	event.preventDefault();
+	localStorage.removeItem("authorization");
+	sessionStorage.removeItem("authorization");
+	window.location.href = "index";
+}
 
-export { login_func, logout_func, address_func, registration_func };
+export {
+	login_func,
+	logout_func,
+	address_func,
+	set_address,
+	registration_func,
+};

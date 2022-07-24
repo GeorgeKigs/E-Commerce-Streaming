@@ -31,7 +31,7 @@ async function pull_cart(product) {
 	let token = get_user_token();
 	if (token) {
 		// send the cart to the db
-		await send_data("/orders/add", cart);
+		await send_data("/orders/cart/add", { products: cart });
 	}
 	return false;
 }
@@ -45,7 +45,9 @@ async function get_cart() {
 	let token = get_user_token();
 	if (token) {
 		let db_cart = await get_data("/orders/cart");
-		db_cart.products.forEach(async (prod) => {
+		console.log(db_cart);
+
+		db_cart.data.products.forEach(async (prod) => {
 			// adds products to the localStorage Cart
 			await push_cart({ product: prod.product, quantity: prod.quantity });
 		});
@@ -62,10 +64,13 @@ async function get_cart() {
  * @returns {Promise<boolean>} boolean
  */
 async function push_cart(products) {
+	let changed = false;
+	let cart = JSON.parse(localStorage.getItem("cart")) || [];
+	console.log("cart: ", cart);
 	try {
 		// check for duplicates, append if none
 		let prods = [];
-		let changed = false;
+
 		for (let i = 0; i < cart.length; i++) {
 			prods.push(cart[i]["product"]);
 		}
@@ -75,14 +80,12 @@ async function push_cart(products) {
 			console.log(cart);
 		}
 	} catch (error) {
-		console.error(error);
+		console.log(error);
 		return false;
 	}
 	//let cart = await get_cart(); wiil not work, user has to be logged in
 	// get the cart within the localStorage
-	let cart = JSON.parse(localStorage.getItem("cart"));
-	console.log("cart: ", cart);
-
+	console.log(changed);
 	// if the cart has changed, change the storage
 	if (changed) {
 		// save in the localstorage. i.e remove then add
@@ -93,7 +96,7 @@ async function push_cart(products) {
 		let token = get_user_token();
 		if (token) {
 			// send the cart to the db
-			await send_data("/orders/add", cart);
+			await send_data("/orders/cart/add", { products: cart });
 		}
 		// send the product to the tracker
 		// send_log_cart({ uuid: check_uuid(), productID: products.product });

@@ -1,4 +1,5 @@
 import { Schema, model, Model, Types, Document } from "mongoose";
+import { config } from "../configs/configs";
 import { cartModel } from "./cart";
 
 interface prodsInt extends Document {
@@ -101,8 +102,7 @@ const orderSchema = new Schema<orderInt, staticInt>(
 const { statics } = orderSchema;
 
 orderSchema.pre("save", async function (next) {
-	const addr = "";
-	const address = await (await fetch(`${addr}/${this.user}`)).json();
+	const address = await (await fetch(`${config.addr_url}/${this.user}`)).json();
 	this.address = { ...address.address[0] };
 	next();
 });
